@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Task fMRI GLM Analysis | Ilaria Lunghini</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        fontSize: 9,
+        flowchart: {
+          useMaxWidth: true,
+          nodeSpacing: 16,
+          rankSpacing: 18,
+          padding: 11,
+          wrappingWidth: 185
+        },
+        themeVariables: {
+          background: '#fcfcfa',
+          primaryColor: '#fcfcfa',
+          primaryTextColor: '#10233f',
+          primaryBorderColor: '#8fc9cf',
+          lineColor: '#8fc9cf',
+          secondaryColor: '#fcfcfa',
+          tertiaryColor: '#fcfcfa',
+          clusterBkg: '#fcfcfa',
+          clusterBorder: '#8fc9cf',
+          edgeLabelBackground: '#fcfcfa',
+          fontFamily: 'DM Serif Display'
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <main class="project-page">
+      <nav class="site-nav">
+        <a class="brand" href="../index.html">Ilaria Lunghini</a>
+        <a class="back-link" href="../index.html#projects">← Back to projects</a>
+      </nav>
+      <article class="project-article readme-content">
+        <h1 id="task-based-fmri-glm-analysis">Task-Based fMRI GLM
+        Analysis</h1>
+        <p><em>MATLAB course project for <strong>Analisi e Modellazione
+        di Sistemi Biologici</strong> (Analysis and Modelling of
+        Biological Systems).</em> This implementation fits a voxelwise
+        general linear model to task-based fMRI data, modelling motor
+        execution and motor imagery conditions with HRF-convolved
+        regressors and producing t-statistic maps for each
+        condition.</p>
+        <h2 id="scope--aim">Aim</h2>
+        <p>Starting from a preprocessed 4D fMRI image, a brain mask, and
+        motor-execution and motor-imagery task protocols, the analysis
+        estimates voxelwise task effects with a general linear model
+        (GLM).</p>
+        <p>The final goal is to produce t-statistic maps for each
+        condition and visualize thresholded activation overlays relative
+        to the mean fMRI anatomy.</p>
+        <h2 id="project-overview">Project Overview</h2>
+        <p>The script loads a preprocessed 4D fMRI image and brain mask,
+        then performs the following analysis steps.</p>
+        <h3 id="1-task-regressor-construction">1. Task-regressor
+        construction</h3>
+        <p>The two task protocols are loaded and each is convolved with
+        SPM12's canonical hemodynamic response function. The resulting
+        motor-execution and motor-imagery regressors are used to model
+        the task conditions.</p>
+        <h3 id="2-design-matrix-and-temporal-filtering">2. Design matrix
+        and temporal filtering</h3>
+        <p>A design matrix is built from the motor-execution regressor,
+        motor-imagery regressor, and an intercept. DCT-based temporal
+        high-pass filtering is then applied.</p>
+        <h3 id="3-voxelwise-model-fitting-and-statistical-maps">3.
+        Voxelwise model fitting and statistical maps</h3>
+        <p>An ordinary least-squares GLM is fitted at each voxel inside
+        the brain mask. The analysis computes t-statistics and
+        uncorrected two-sided p-values for each task regressor, then
+        displays unthresholded t-statistic maps and thresholded
+        activation overlays.</p>
+        <div class="mermaid">flowchart TD
+            A[Motor-execution and motor-imagery task protocols] --> B[Convolve protocols with the canonical HRF]
+            B --> C[Build design matrix with two task regressors and an intercept]
+            D[Preprocessed 4D fMRI image] --> E[Apply DCT-based temporal high-pass filtering]
+            C --> E
+            E --> F[Fit voxelwise ordinary least-squares GLM]
+            G[Brain mask] --> F
+            F --> H[Compute t-statistics and uncorrected two-sided p-values]
+            H --> I[Display t-statistic maps and thresholded activation overlays]</div>
+        <h2 id="requirements">Requirements</h2>
+        <ul>
+        <li>MATLAB;</li>
+        <li>SPM12;</li>
+        <li>MATLAB Statistics and Machine Learning Toolbox;</li>
+        <li>authorized fMRI data in NIfTI format.</li>
+        </ul>
+        <h2 id="implementation">Implementation</h2>
+        <p>The workflow constructs HRF-convolved task regressors,
+        applies DCT-based temporal high-pass filtering, fits an
+        ordinary least-squares GLM within the brain mask, and
+        calculates t-statistics and uncorrected two-sided p-values for
+        the task regressors.</p>
+        <h2 id="results">Results</h2>
+        <p>When run with authorized data, the final visualization
+        displays all 36 slices, comparing thresholded motor-execution
+        and motor-imagery t-statistic maps side by side.</p>
+        <p>Each map is overlaid on the mean fMRI image and thresholded
+        at two-sided <code>p &lt; 0.05</code> (uncorrected), with
+        non-significant voxels shown as transparent. The
+        <code>hot</code> colormap displays t-values from 0 to 10, with
+        brighter colours indicating stronger positive t-statistic values
+        among the displayed effects.</p>
+      </article>
+    </main>
+  </body>
+</html>

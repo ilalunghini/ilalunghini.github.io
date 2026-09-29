@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EEG Source Connectivity Analysis | Ilaria Lunghini</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        fontSize: 9,
+        flowchart: {
+          useMaxWidth: true,
+          nodeSpacing: 16,
+          rankSpacing: 18,
+          padding: 11,
+          wrappingWidth: 185
+        },
+        themeVariables: {
+          background: '#fcfcfa',
+          primaryColor: '#fcfcfa',
+          primaryTextColor: '#10233f',
+          primaryBorderColor: '#8fc9cf',
+          lineColor: '#8fc9cf',
+          secondaryColor: '#fcfcfa',
+          tertiaryColor: '#fcfcfa',
+          clusterBkg: '#fcfcfa',
+          clusterBorder: '#8fc9cf',
+          edgeLabelBackground: '#fcfcfa',
+          fontFamily: 'DM Serif Display'
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <main class="project-page">
+      <nav class="site-nav">
+        <a class="brand" href="../index.html">Ilaria Lunghini</a>
+        <a class="back-link" href="../index.html#projects">← Back to projects</a>
+      </nav>
+      <article class="project-article readme-content">
+        <h1 id="eeg-inverse-solution-and-connectivity-analysis">EEG
+        Inverse Solution and Connectivity Analysis</h1>
+        <p><em>MATLAB course project for <strong>Analisi e Modellazione
+        dei Sistemi Biologici</strong> (Analysis and Modelling of
+        Biological Systems).</em> This private repository preserves the
+        coursework implementation and its helper functions.</p>
+        <h2 id="scope--aim">Aim</h2>
+        <p>Starting from high-density EEG recordings, a template MRI,
+        electrode locations, cortical-surface resources, and an atlas,
+        the analysis estimates cortical source activity and analyses
+        connectivity between atlas-defined regions of interest.</p>
+        <p>The final goal is to reconstruct source activity with
+        eLORETA, parcellate it into 100 atlas-defined regions, estimate
+        delta-band partial directed coherence, and visualize directed
+        connectivity and weighted node strength.</p>
+        <h2 id="project-overview">Project Overview</h2>
+        <p>The workflow combines a three-layer boundary-element head
+        model, eLORETA source reconstruction, atlas-based parcellation,
+        partial directed coherence, and network-strength
+        visualization.</p>
+        <h3 id="1-eeg-loading-and-head-model-construction">1. EEG
+        loading and head-model construction</h3>
+        <p>EEG data are loaded through EEGLAB and converted to a
+        FieldTrip structure. A template MRI is segmented to construct a
+        three-layer boundary-element head model, while cortical solution
+        points define the source space.</p>
+        <h3 id="2-electrode-alignment-and-inverse-solution">2. Electrode
+        alignment and inverse solution</h3>
+        <p>Electrode locations are aligned to the head model, and a lead
+        field is computed. Source activity is then estimated with
+        eLORETA.</p>
+        <h3 id="3-source-interpolation-and-parcellation">3. Source
+        interpolation and parcellation</h3>
+        <p>Source activity is interpolated to the template MRI and
+        parcellated with a 100-region atlas, producing
+        region-of-interest time series and source-level measures.</p>
+        <h3 id="4-connectivity-and-network-analysis">4. Connectivity and
+        network analysis</h3>
+        <p>Delta-band partial directed coherence is estimated between
+        regions. The connectivity matrix is visualized and converted
+        into BrainNet Viewer node and edge files; weighted node strength
+        is then visualized on the brain surface.</p>
+        <div class="mermaid">flowchart TD
+            A[High-density EEG recordings] --> B[Load with EEGLAB and convert to FieldTrip]
+            C[Template MRI, cortical surface, and atlas resources] --> D[Build three-layer BEM head model and source space]
+            B --> E[Align electrodes and compute lead field]
+            D --> E
+            E --> F[Estimate cortical source activity with eLORETA]
+            F --> G[Interpolate and parcellate into 100 regions]
+            G --> H[Estimate delta-band partial directed coherence]
+            H --> I[Visualize connectivity and weighted node strength with BrainNet Viewer]</div>
+        <h2 id="requirements">Requirements</h2>
+        <ul>
+        <li>MATLAB;</li>
+        <li>FieldTrip;</li>
+        <li>EEGLAB;</li>
+        <li>GIFTI support for MATLAB;</li>
+        <li>BrainNet Viewer;</li>
+        <li>access to the authorised EEG data and external MRI, atlas,
+        and cortical-surface resources.</li>
+        </ul>
+        <h2 id="implementation">Implementation</h2>
+        <p>The workflow uses FieldTrip for MRI segmentation, BEM
+        head-model construction,
+        lead-field calculation, eLORETA source analysis, atlas
+        parcellation, spectral analysis, and partial directed coherence
+        estimation.</p>
+        <p>Supporting routines normalize connectivity values and prepare
+        BrainNet Viewer-compatible network visualizations. The analysis
+        computes weighted node strength from the connectivity matrix for
+        surface visualization.</p>
+        <h2 id="results">Results</h2>
+        <p>With authorised data, the workflow produces source-level
+        activity, atlas-parcellated region-of-interest time series, a
+        delta-band partial directed coherence matrix, BrainNet
+        connectivity visualizations, and weighted node-strength
+        maps.</p>
+        <p>No figures or results derived from the course dataset are
+        included in this repository.</p>
+      </article>
+    </main>
+  </body>
+</html>

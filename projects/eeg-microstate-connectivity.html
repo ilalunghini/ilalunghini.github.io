@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EEG Microstate Connectivity | Ilaria Lunghini</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        fontSize: 9,
+        flowchart: {
+          useMaxWidth: true,
+          nodeSpacing: 16,
+          rankSpacing: 18,
+          padding: 11,
+          wrappingWidth: 185
+        },
+        themeVariables: {
+          background: '#fcfcfa',
+          primaryColor: '#fcfcfa',
+          primaryTextColor: '#10233f',
+          primaryBorderColor: '#8fc9cf',
+          lineColor: '#8fc9cf',
+          secondaryColor: '#fcfcfa',
+          tertiaryColor: '#fcfcfa',
+          clusterBkg: '#fcfcfa',
+          clusterBorder: '#8fc9cf',
+          edgeLabelBackground: '#fcfcfa',
+          fontFamily: 'DM Serif Display'
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <main class="project-page">
+      <nav class="site-nav">
+        <a class="brand" href="../index.html">Ilaria Lunghini</a>
+        <a class="back-link" href="../index.html#projects">← Back to projects</a>
+      </nav>
+      <article class="project-article readme-content">
+        <h1 id="eeg-microstate-connectivity-pipeline">EEG Microstate
+        Connectivity Pipeline</h1>
+        <p><em>Private bachelor-thesis portfolio project on
+        resting-state EEG microstates, functional connectivity, and
+        graph-theoretical analysis in healthy controls and people with
+        multiple sclerosis.</em></p>
+        <h2 id="scope--aim">Aim</h2>
+        <p>Starting from private high-density resting-state EEG
+        recordings, the underlying MATLAB-oriented pipeline extracts and
+        backfits microstates, estimates microstate-specific functional
+        connectivity, and derives graph-theoretical measures.</p>
+        <p>The project aims to investigate exploratory group differences
+        across combinations of frequency band, microstate class, and
+        graph-theoretical feature. It is not intended to validate a
+        clinical biomarker; its primary contribution is an integrated,
+        technically transparent analysis workflow.</p>
+        <h2 id="project-overview">Project Overview</h2>
+        <p>The pipeline combines microstate extraction and backfitting,
+        orthogonalized amplitude-envelope correlation, edge-wise
+        rank-sum comparisons, graph-based summaries, and exploratory
+        group-level statistics.</p>
+        <h3 id="1-microstate-extraction-and-backfitting">1. Microstate
+        extraction and backfitting</h3>
+        <p>Resting-state EEG is processed with EEGLAB and MICROSTATELAB.
+        Individual microstate maps are extracted at Global Field Power
+        peaks with k-means clustering. Group and grand-level templates
+        are constructed, then sorted against the Koenig 2002 template to
+        assign comparable microstate labels across subjects and
+        groups.</p>
+        <p>The shared template is backfit to subject-level EEG data,
+        assigning a microstate label to each relevant time sample.
+        Temporal parameters—including individual explained variance,
+        mean duration, mean occurrence, and coverage—are subsequently
+        compared between groups.</p>
+        <h3 id="2-microstate-specific-connectivity">2.
+        Microstate-specific connectivity</h3>
+        <p>The microstate-labelled data are converted to FieldTrip
+        format. For each subject, frequency band, and microstate, the
+        pipeline selects the relevant samples and estimates functional
+        connectivity with orthogonalized amplitude-envelope correlation
+        (AEC).</p>
+        <p>The method uses Hilbert-derived amplitude envelopes and
+        directional orthogonalization for each channel pair to reduce
+        the influence of zero-lag correlations related to volume
+        conduction. The two directional correlations are averaged to
+        produce a symmetric channel-by-channel connectivity matrix.</p>
+        <h3 id="3-edge-wise-and-graph-theoretical-analysis">3. Edge-wise
+        and graph-theoretical analysis</h3>
+        <p>Each connectivity matrix is vectorized over its upper
+        triangle for edge-wise group comparison using the Wilcoxon
+        rank-sum test. Subject-level weighted connectivity matrices are
+        also used to calculate nodal and global graph measures,
+        including centrality, clustering coefficient, global efficiency,
+        characteristic path length, modularity, and assortativity.</p>
+        <p>Connectivity matrices are organized by anatomical channel
+        region for interpretation. Nodal measures are summarized across
+        channels, then compared between groups with Wilcoxon rank-sum
+        tests and exploratory ROC/AUC analysis.</p>
+        <div class="mermaid">flowchart TD
+            A[Private high-density resting-state EEG] --> B[Extract microstates at Global Field Power peaks]
+            B --> C[Construct shared template and backfit microstate labels]
+            C --> D[Select samples by microstate and frequency band]
+            D --> E[Estimate orthogonalized amplitude-envelope connectivity]
+            E --> F[Build subject-level connectivity matrices]
+            F --> G[Compare edges between groups with rank-sum tests]
+            F --> H[Compute graph-theoretical measures]
+            G --> I[Summarize exploratory group-level results]
+            H --> I</div>
+        <h2 id="requirements">Requirements</h2>
+        <p>The underlying analysis pipeline requires:</p>
+        <ul>
+        <li>MATLAB;</li>
+        <li>EEGLAB and MICROSTATELAB;</li>
+        <li>FieldTrip;</li>
+        <li>Brain Connectivity Toolbox functions;</li>
+        <li>the original private EEG data, channel mask, coordinate
+        file, and compatible MATLAB toolbox environment.</li>
+        </ul>
+        <h2 id="implementation">Implementation</h2>
+        <p>The underlying implementation is organized around an upstream
+        microstate-processing workflow and a downstream ordered analysis
+        workflow. The upstream stage loads subject-level EEG data,
+        applies channel selection, performs microstate clustering and
+        backfitting, converts results to FieldTrip structures, and
+        checkpoint-saves orthogonalized AEC connectivity results.</p>
+        <p>The downstream stage analyzes temporal parameters, performs
+        edge-wise connectivity statistics, computes graph metrics, ranks
+        graph-derived features, and generates visualizations. Supporting
+        routines handle subject-level AEC computation, anatomical
+        channel ordering, connectivity normalization, and
+        BrainNet-compatible visualization outputs.</p>
+        <h2 id="results">Results</h2>
+        <p>The associated report describes exploratory differences that
+        were mainly related to betweenness centrality. However, the
+        principal exploratory findings did not survive FDR correction
+        and must be interpreted as hypothesis-generating rather than
+        confirmatory.</p>
+        <p>The portfolio intentionally presents only synthetic values
+        and illustrative figures. No raw data, participant-level
+        results, connectivity matrices, or experimental numerical
+        outputs are included.</p>
+      </article>
+    </main>
+  </body>
+</html>

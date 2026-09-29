@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Franka Panda: Pegs and Rings | Ilaria Lunghini</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        fontSize: 9,
+        flowchart: {
+          useMaxWidth: true,
+          nodeSpacing: 16,
+          rankSpacing: 18,
+          padding: 11,
+          wrappingWidth: 185
+        },
+        themeVariables: {
+          background: '#fcfcfa',
+          primaryColor: '#fcfcfa',
+          primaryTextColor: '#10233f',
+          primaryBorderColor: '#8fc9cf',
+          lineColor: '#8fc9cf',
+          secondaryColor: '#fcfcfa',
+          tertiaryColor: '#fcfcfa',
+          clusterBkg: '#fcfcfa',
+          clusterBorder: '#8fc9cf',
+          edgeLabelBackground: '#fcfcfa',
+          fontFamily: 'DM Serif Display'
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <main class="project-page">
+      <nav class="site-nav">
+        <a class="brand" href="../index.html">Ilaria Lunghini</a>
+        <a class="back-link" href="../index.html#projects">← Back to projects</a>
+      </nav>
+      <article class="project-article readme-content">
+        <h1 id="franka-panda-peg-and-ring-pick-and-place">Franka Panda
+        Peg-and-Ring Pick-and-Place</h1>
+        <p><em>Academic robotics simulation for <strong>Principi di
+        Robotica e applicazioni alla chirurgia</strong> in the
+        <strong>Ingegneria dei Sistemi Medicali per la Persona</strong>
+        programme.</em> A Franka Panda manipulator places three
+        colour-coded rings onto their matching pegs in CoppeliaSim.</p>
+        <h2 id="scope--aim">Aim</h2>
+        <p>Starting from a CoppeliaSim scene containing a Franka Panda
+        robot, three colour-coded rings, and matching pegs, the project
+        controls the manipulator through Cartesian target motion and
+        inverse kinematics.</p>
+        <p>The goal is to place each ring onto the peg of the same
+        colour. The user selects the first ring; afterward, the
+        controller selects the closest remaining ring with a greedy
+        nearest-neighbour policy.</p>
+        <h2 id="project-overview">Project Overview</h2>
+        <p>The project demonstrates Cartesian target control, inverse
+        kinematics, waypoint-based motion, grasp-offset compensation,
+        and greedy task sequencing.</p>
+        <h3 id="1-scene-interpretation-and-waypoint-planning">1. Scene
+        interpretation and waypoint planning</h3>
+        <p>The controller operates in the CoppeliaSim world frame and
+        queries the positions of the rings and pegs from the scene. For
+        each ring, it computes a safe pose above the ring, a pick pose
+        at its outer edge, a transport pose above the matching peg, and
+        a placement pose at the peg.</p>
+        <p>The waypoint layout was designed to keep movement controlled
+        in a constrained workspace, reflecting a key consideration in
+        surgical robotics: when space around the robot is limited,
+        deliberate clearance above objects and pegs helps avoid
+        unnecessarily wide or low movements. The safe heights provide
+        clearance over the pegs while the Cartesian segments keep the
+        motion easy to inspect and reproduce.</p>
+        <h3 id="2-cartesian-motion-and-inverse-kinematics">2. Cartesian
+        motion and inverse kinematics</h3>
+        <p>The inverse-kinematics target follows linearly interpolated
+        Cartesian trajectories between the waypoints. CoppeliaSim's
+        internal IK solver converts the desired target pose into joint
+        motion for the Panda arm.</p>
+        <h3 id="3-grasp-offset-compensation-and-task-sequencing">3.
+        Grasp-offset compensation and task sequencing</h3>
+        <p>To place the ring accurately, the controller computes the
+        offset between the gripper's edge grasp point and the ring
+        centre. It preserves this offset when computing the placement
+        pose, aligning the ring with the target peg.</p>
+        <p>After the user-selected first ring, the controller estimates
+        the Euclidean distance from the current target position to each
+        remaining ring's pick pose and selects the smallest
+        distance.</p>
+        <div class="mermaid">flowchart TD
+            A[CoppeliaSim scene with Panda arm, rings, and pegs] --> B[Query ring and peg positions]
+            B --> C[User selects the first ring]
+            C --> D[Compute safe, pick, transport, and placement poses]
+            D --> E[Interpolate Cartesian waypoint motion]
+            E --> F[Use the CoppeliaSim IK solver for joint motion]
+            F --> G[Grasp ring and preserve gripper-to-ring offset]
+            G --> H[Place ring on its colour-matched peg]
+            H --> I[Select closest remaining ring using greedy nearest neighbour]
+            I --> D</div>
+        <h2 id="requirements">Requirements</h2>
+        <ul>
+        <li>CoppeliaSim with the ZeroMQ Remote API available;</li>
+        <li>Python 3;</li>
+        <li>the required Python package.</li>
+        </ul>
+        <p>The original materials do not record the exact CoppeliaSim or
+        Python version used to develop and test the project. Use a
+        CoppeliaSim version compatible with the ZeroMQ Remote API and
+        retain the scene's object names and hierarchy.</p>
+        <h2 id="implementation">Implementation</h2>
+        <p>The project uses the CoppeliaSim ZeroMQ Remote API from
+        Python. The controller:</p>
+        <ul>
+        <li>advances a stepped simulation for deterministic waypoint
+        updates;</li>
+        <li>controls the Panda through a Cartesian IK target;</li>
+        <li>opens and closes the two gripper fingers;</li>
+        <li>estimates ring radius from the scene object's bounding box;
+        and</li>
+        <li>simulates grasping by temporarily parenting a ring to the
+        gripper tip during transport.</li>
+        </ul>
+        <p>The parent-child attachment is an intentional simulation
+        simplification. It is not a physics-based contact or
+        grasp-stability model.</p>
+        <h3 id="skills-demonstrated">Skills demonstrated</h3>
+        <ul>
+        <li>Python programming and external simulator control;</li>
+        <li>CoppeliaSim scene interaction through the ZeroMQ Remote
+        API;</li>
+        <li>Cartesian motion planning with waypoint interpolation;</li>
+        <li>inverse-kinematics-based robot control;</li>
+        <li>coordinate-frame reasoning and geometric offset
+        compensation;</li>
+        <li>greedy nearest-neighbour task sequencing.</li>
+        </ul>
+        <h2 id="results">Results</h2>
+        <p>The reported outcome is successful colour-matched placement
+        of all three rings. The controller implements pose handling,
+        IK-based waypoint motion, grasp-offset compensation, sequential
+        execution, and greedy ring selection for this task.</p>
+        <p>No quantitative performance study, physical grasp validation,
+        or trajectory-optimization comparison was part of the original
+        project.</p>
+      </article>
+    </main>
+  </body>
+</html>

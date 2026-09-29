@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gait Kinematics and JCS Analysis | Ilaria Lunghini</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        fontSize: 9,
+        flowchart: {
+          useMaxWidth: true,
+          nodeSpacing: 16,
+          rankSpacing: 18,
+          padding: 11,
+          wrappingWidth: 185
+        },
+        themeVariables: {
+          background: '#fcfcfa',
+          primaryColor: '#fcfcfa',
+          primaryTextColor: '#10233f',
+          primaryBorderColor: '#8fc9cf',
+          lineColor: '#8fc9cf',
+          secondaryColor: '#fcfcfa',
+          tertiaryColor: '#fcfcfa',
+          clusterBkg: '#fcfcfa',
+          clusterBorder: '#8fc9cf',
+          edgeLabelBackground: '#fcfcfa',
+          fontFamily: 'DM Serif Display'
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <main class="project-page">
+      <nav class="site-nav">
+        <a class="brand" href="../index.html">Ilaria Lunghini</a>
+        <a class="back-link" href="../index.html#projects">← Back to projects</a>
+      </nav>
+      <article class="project-article readme-content">
+        <h1 id="gait-kinematics-with-joint-coordinate-systems">Gait
+        Kinematics with Joint Coordinate Systems</h1>
+        <p>MATLAB course project for <em>Basi di Analisi del
+        Movimento</em> (Fundamentals of Movement Analysis). The project
+        estimates right lower-limb kinematics from stereophotogrammetric
+        marker trajectories recorded during treadmill walking.</p>
+        <h2 id="aim">Aim</h2>
+        <p>The objective is to reconstruct the motion of the tibia,
+        calcaneus, metatarsus, and foot from marker coordinates, then
+        quantify their relative motion over repeated gait cycles.</p>
+        <p>The analysis produces:</p>
+        <ul>
+        <li>joint-angle trajectories in three anatomical components for
+        Ankle 1 (tibia-calcaneus), calcaneus-metatarsus, and Ankle 2
+        (tibia-anatomical foot);</li>
+        <li>sagittal-plane angular velocities of the tibia, anatomical
+        foot, and Ankle 2;</li>
+        <li>visual checks of the static and dynamic segment coordinate
+        systems.</li>
+        </ul>
+        <h2 id="marker-model">Marker model</h2>
+        <p>The marker labels below identify the anatomical landmarks
+        used to construct the segment reference systems. Coordinates are
+        expressed in the laboratory reference system and are organized
+        by the acquisition file into static and dynamic trials.</p>
+        <table>
+        <thead>
+        <tr>
+        <th>Segment</th>
+        <th>Marker</th>
+        <th>Anatomical role</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>Tibia</td>
+        <td><code>RKJC</code></td>
+        <td>Virtual knee-joint centre; available only in the static
+        trial.</td>
+        </tr>
+        <tr>
+        <td>Tibia</td>
+        <td><code>RTUB</code></td>
+        <td>Tibial-tuberosity landmark.</td>
+        </tr>
+        <tr>
+        <td>Tibia</td>
+        <td><code>RHFB</code></td>
+        <td>Fibular-head landmark.</td>
+        </tr>
+        <tr>
+        <td>Tibia</td>
+        <td><code>RANK</code></td>
+        <td>Lateral-malleolus landmark.</td>
+        </tr>
+        <tr>
+        <td>Tibia</td>
+        <td><code>RMMA</code></td>
+        <td>Medial-malleolus landmark.</td>
+        </tr>
+        <tr>
+        <td>Tibia</td>
+        <td><code>RSHN</code></td>
+        <td>Tibial-shaft landmark.</td>
+        </tr>
+        <tr>
+        <td>Calcaneus</td>
+        <td><code>RCA1</code>, <code>RCA2</code></td>
+        <td>Posterior calcaneal landmarks.</td>
+        </tr>
+        <tr>
+        <td>Calcaneus</td>
+        <td><code>RLCA</code></td>
+        <td>Lateral calcaneal landmark.</td>
+        </tr>
+        <tr>
+        <td>Calcaneus</td>
+        <td><code>RSTL</code></td>
+        <td>Sustentaculum-tali landmark.</td>
+        </tr>
+        <tr>
+        <td>Metatarsus</td>
+        <td><code>RP1M</code>, <code>RP5M</code></td>
+        <td>First- and fifth-metatarsal base landmarks.</td>
+        </tr>
+        <tr>
+        <td>Metatarsus</td>
+        <td><code>RD1M</code>, <code>RD5M</code></td>
+        <td>First- and fifth-metatarsal head landmarks;
+        <code>RD1M</code> is used only in the static trial.</td>
+        </tr>
+        <tr>
+        <td>Foot</td>
+        <td><code>RTOE</code></td>
+        <td>Distal toe landmark used to define the foot forward
+        direction.</td>
+        </tr>
+        </tbody>
+        </table>
+        <h2 id="analysis-workflow">Analysis workflow</h2>
+        <h3 id="1-static-calibration">1. Static calibration</h3>
+        <p>The static trial defines a Cartesian coordinate system for
+        each segment. Each system has an origin and three unit vectors.
+        Marker-to-marker vectors provide anatomical directions; cross
+        products create perpendicular directions; normalization ensures
+        that every axis has unit length.</p>
+        <p>The resulting axes form a right-handed rotation matrix, while
+        the selected origin gives the segment position. Together, they
+        define a homogeneous transformation matrix for the segment.</p>
+        <table>
+        <thead>
+        <tr>
+        <th>Segment or system</th>
+        <th>Origin</th>
+        <th>Geometric principle used to define orientation</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>Tibia</td>
+        <td>Midpoint of <code>RMMA</code> and <code>RANK</code></td>
+        <td>The ankle markers define a mediolateral direction; the
+        fibular-head direction and cross products complete the tibial
+        frame.</td>
+        </tr>
+        <tr>
+        <td>Calcaneus</td>
+        <td>Centroid of <code>RCA1</code>, <code>RCA2</code>,
+        <code>RLCA</code>, and <code>RSTL</code></td>
+        <td>Rearfoot-marker planes and the static support-plane normal
+        define the calcaneal orientation.</td>
+        </tr>
+        <tr>
+        <td>Metatarsus</td>
+        <td>Centroid of <code>RD1M</code>, <code>RD5M</code>, and
+        <code>RP5M</code></td>
+        <td>Metatarsal-marker geometry and the toe direction define the
+        forefoot frame.</td>
+        </tr>
+        <tr>
+        <td>Technical foot</td>
+        <td>Heel-region marker</td>
+        <td>A marker-based frame provides a stable rigid-body reference
+        for foot tracking.</td>
+        </tr>
+        <tr>
+        <td>Anatomical foot</td>
+        <td>Heel-region marker</td>
+        <td>A heel-to-toe direction is projected onto the technical-foot
+        plane to define an anatomically meaningful forward axis.</td>
+        </tr>
+        </tbody>
+        </table>
+        <p>Static marker positions are then expressed in their own
+        segment reference systems. These local marker configurations are
+        rigid templates: they describe the geometry of each segment
+        independently of its position in the laboratory.</p>
+        <h3 id="2-dynamic-segment-localization">2. Dynamic segment
+        localization</h3>
+        <p>During walking, the same markers are observed in the
+        laboratory reference system at every frame. For each segment,
+        the code aligns its static local template with the dynamic
+        marker configuration using SVD-based least-squares rigid-body
+        registration.</p>
+        <p>This estimates the rotation and position that best fit all
+        available markers at that frame. Using multiple markers reduces
+        reliance on an individual marker and provides a stable estimate
+        of segment pose.</p>
+        <p>The script visualizes selected frames to verify that the
+        coordinate systems remain attached to the appropriate segments
+        throughout the gait trial.</p>
+        <h3 id="3-relative-rotations-and-joint-angles">3. Relative
+        rotations and joint angles</h3>
+        <p>Joint motion is calculated from the relative rotation between
+        a distal segment and its proximal segment:</p>
+        <table>
+        <thead>
+        <tr>
+        <th>Joint</th>
+        <th>Proximal segment</th>
+        <th>Distal segment</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>Ankle 1</td>
+        <td>Tibia</td>
+        <td>Calcaneus</td>
+        </tr>
+        <tr>
+        <td>Calcaneus-metatarsus</td>
+        <td>Calcaneus</td>
+        <td>Metatarsus</td>
+        </tr>
+        <tr>
+        <td>Ankle 2</td>
+        <td>Tibia</td>
+        <td>Anatomical foot</td>
+        </tr>
+        </tbody>
+        </table>
+        <p>Each relative rotation is decomposed into the three
+        components requested for the assignment:</p>
+        <table>
+        <thead>
+        <tr>
+        <th>Component</th>
+        <th>Interpretation</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td><code>e1</code></td>
+        <td>Plantarflexion / dorsiflexion</td>
+        </tr>
+        <tr>
+        <td><code>e2</code></td>
+        <td>Internal / external rotation</td>
+        </tr>
+        <tr>
+        <td><code>e3</code></td>
+        <td>Inversion / eversion</td>
+        </tr>
+        </tbody>
+        </table>
+        <h3 id="4-gait-cycle-normalization">4. Gait-cycle
+        normalization</h3>
+        <p>The acquisition provides the start and end frame of five gait
+        cycles. Because their durations differ slightly, each trajectory
+        is resampled to 101 points, representing 0–100% of a gait cycle.
+        This permits direct comparison between cycles and supports the
+        joint-angle and angular-velocity plots produced by the
+        script.</p>
+        <h3 id="5-sagittal-angular-velocity">5. Sagittal angular
+        velocity</h3>
+        <p>Angular velocity is estimated from the frame-to-frame
+        derivative of the segment rotation matrix. The script reports
+        the sagittal component for the tibia, anatomical foot, and their
+        relative motion at Ankle 2.</p>
+        <p>The sampling frequency is set to 100 Hz in the current
+        implementation. This value must match the acquisition setting
+        before absolute angular-velocity magnitudes are interpreted.</p>
+        <h2 id="requirements">Requirements</h2>
+        <ul>
+        <li>MATLAB with page-wise matrix operations and singular-value
+        decomposition support.</li>
+        </ul>
+        <p>Gait-cycle normalization uses base-MATLAB linear
+        interpolation with both event endpoints included; no Signal
+        Processing Toolbox is required.</p>
+      </article>
+    </main>
+  </body>
+</html>
