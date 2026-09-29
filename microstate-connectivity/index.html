@@ -1,0 +1,816 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EEG Microstate Connectivity Pipeline | Methodology</title><style>
+:root{--ink:#162832;--muted:#61747e;--blue:#0876b9;--red:#c93e37;--line:#dce6e8}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f2f6f7;font-family:Inter,system-ui,sans-serif;color:var(--ink)}.privacy{position:fixed;top:0;z-index:9;width:100%;padding:.65rem;text-align:center;background:#e9f1f3;color:#556873;font-size:.66rem;letter-spacing:.05em}.hero{height:100svh;padding:0 7vw 12vh;display:grid;align-content:end;color:white;background:linear-gradient(125deg,#102630,#1c3e4d)}.k,.chapter{color:#8bd8f4;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}.hero h1,.copy h2{font-family:Georgia,serif;font-weight:500;letter-spacing:-.05em}.hero h1{max-width:1100px;margin:.8rem 0 1.2rem;font-size:clamp(2.9rem,6vw,6.3rem);line-height:.98}.hero p{max-width:610px;color:#d8e5e9;line-height:1.6}.stage{position:sticky;top:0;height:100svh;display:grid;place-items:center;overflow:hidden;background:#f7fafb}.stage:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 0 49.92%,#d6e2e633 50%,transparent 50.08%)}.hud{position:absolute;z-index:1;top:5rem;left:5vw;right:5vw;display:flex;justify-content:space-between;font-size:.7rem;letter-spacing:.11em;text-transform:uppercase;color:#758993}.hud b{color:#213842}svg{position:relative;z-index:1;width:min(92vw,1120px);height:min(74vh,760px);overflow:visible;transition:opacity .32s ease,transform .48s cubic-bezier(.2,.7,.2,1)}svg.scene-in{animation:scene-in .48s cubic-bezier(.2,.7,.2,1)}@keyframes scene-in{from{opacity:.2;transform:translateY(7px)}to{opacity:1;transform:none}}.rail{position:absolute;z-index:1;bottom:2rem;left:5vw;font-size:.72rem;color:#61747d}.rail:before{content:"";display:inline-block;width:5rem;margin-right:.7rem;vertical-align:middle;border-top:1px solid #a9bac1}.steps{position:relative;z-index:2;margin-top:-100svh;padding:0 5vw 9vh;pointer-events:none}.step{min-height:96svh;display:flex;align-items:center}.copy{pointer-events:auto;width:min(445px,43vw);padding:1.6rem 1.7rem;background:#fffffff2;border:1px solid #dce6e8;box-shadow:0 12px 36px #23424b10}.step:nth-child(even) .copy{margin-left:auto}.copy h2{margin:.5rem 0 .8rem;font-size:clamp(1.9rem,3.1vw,3rem);line-height:1.03}.copy p{color:#4d606a;font-size:.92rem;line-height:1.63}.em{font-weight:650;color:#213943!important}.snippet{margin:1rem 0 0;padding:.75rem .9rem;white-space:pre-wrap;background:#eef4f5;border-left:2px solid var(--blue);font:.7rem/1.55 ui-monospace,monospace;color:#3e5661}.footer{position:relative;z-index:3;padding:9vh 5vw;text-align:center;background:#132a35;color:#cad7dc;font-size:.8rem}@media(max-width:760px){.hero{padding:0 8vw 12vh}.steps{padding:0 6vw}.step{min-height:92svh;align-items:end;padding-bottom:7vh}.copy,.step:nth-child(even) .copy{width:100%;margin:0}.hud{top:4.4rem;left:7vw;right:7vw}svg{width:98vw;height:62vh}}
+</style><style>.metrics-list{margin:.25rem 0 .8rem;padding-left:1.2rem;color:#4d606a;font-size:.92rem;line-height:1.55}.metrics-list li{padding-left:.2rem;margin:.3rem 0}.metrics-list li::marker{color:#0876b9}</style><meta name="description" content="An interactive methodology walkthrough of an EEG microstate connectivity-analysis pipeline for healthy controls and people with multiple sclerosis."><meta property="og:title" content="EEG Microstate Connectivity Pipeline"><meta property="og:description" content="An interactive methodology walkthrough of an EEG microstate connectivity-analysis pipeline."><meta property="og:image" content="eeg-cap-hero.png"><meta name="theme-color" content="#071520"></head><body><a class="skip-link" href="#methodology">Skip to methodology</a><div class="privacy">Synthetic illustrative figures only · no private EEG, participant data, or experimental values</div><header class="hero"><span class="k">Interactive methodology story</span><h1>EEG microstate connectivity: a methodological pipeline for healthy controls and multiple sclerosis</h1><p>An interactive, step-by-step walkthrough of the EEG microstate connectivity-analysis pipeline.</p></header><main id="methodology"><div class="stage" role="region" aria-label="Animated EEG microstate connectivity methodology illustration"><div class="hud" aria-live="polite"><b id="h">01 — Microstates</b><span id="t">signal representation</span></div><svg id="s" viewBox="0 0 1000 650" role="img" aria-label="Animated synthetic illustration for the current methodology step"></svg><div id="map-layer" aria-hidden="true"></div><div id="r" class="rail">01 / 13 · EEG → GFP → GFP peaks → scalp maps → clustering.</div></div><section class="steps" aria-label="EEG microstate connectivity methodology steps">
+<article class="step" data-i="0"><div class="section-one-copy"><span class="chapter">01 / Signal to microstates</span><h2>Microstates</h2><p>EEG microstates are brief periods in which the scalp-potential pattern remains relatively stable. They are thought to reflect coordinated activity across distributed brain regions.</p><p class="em">EEG → GFP → GFP peaks → scalp topographies → clustering.</p></div></article>
+<article class="step" data-i="1"><div class="copy"><span class="chapter">02 / GFP peaks</span><h2>Keep the most informative moments.</h2><p>The modified k-means procedure uses Global Field Power peaks rather than every sample. This improves signal-to-noise ratio and keeps clustering computationally tractable.</p><pre class="snippet">ClustPar.UseAAHC        = false;
+ClustPar.MinClasses     = 6;
+ClustPar.MaxClasses     = 6;
+ClustPar.Restarts       = 100;
+ClustPar.MaxMaps        = inf;
+ClustPar.GFPPeaks       = true;
+ClustPar.IgnorePolarity = true;
+ClustPar.Normalize      = true;</pre></div></article>
+<article class="step" data-i="2"><div class="copy"><span class="chapter">03 / Individual maps</span><h2>Six maps for one participant.</h2><p>For each participant, scalp topographies at GFP peaks are grouped with modified k-means to identify six recurring microstate classes. The resulting maps describe the patterns found in that participant’s EEG.</p><pre class="snippet">[EEG, CURRENTSET] = pop_FindMSMaps(ALLEEG, AllSubjects, 'ClustPar', ClustPar);</pre></div></article>
+<article class="step" data-i="3"><div class="copy"><span class="chapter">04 / Group template</span><h2>From individual to group.</h2><p>Individual maps are combined within HCs and PwMS, producing a group-level mean map set while maintaining the six-class structure.</p><pre class="snippet">EEG = pop_CombMSMaps(ALLEEG, GroupIdx{g}, 'MeanName', ['Mean_' groupNames{g} '_' condNames{g}{1}], 'IgnorePolarity', ClustPar.IgnorePolarity);</pre></div></article>
+<article class="step" data-i="4"><div class="copy"><span class="chapter">05 / Grand-Grand Mean</span><h2>Grand-Grand Mean</h2><p>The two group templates are combined into the Grand-Grand Mean: the shared population-level reference carried forward into sorting and backfitting.</p><p class="em">Individual → Group → Population.</p><pre class="snippet">EEG = pop_CombMSMaps(ALLEEG, [GroupMeanIdx{:}], 'MeanName', 'GrandGrandMean', 'IgnorePolarity', ClustPar.IgnorePolarity);</pre></div></article>
+<article class="step" data-i="5"><div class="copy"><span class="chapter">06 / Sorting</span><h2>Sorting</h2><p>The Grand-Grand Mean is matched to the Koenig 2002 reference. Individual and group maps are then sorted against the Grand-Grand Mean, keeping class labels A, B, C, D, E, and G consistent and comparable with prior studies.</p><pre class="snippet">[ALLEEG, EEG, CURRENTSET] = pop_SortMSMaps(ALLEEG, SortIdx, 'TemplateSet', GrandGrandMeanIdx, 'Classes', N_CLASSES, 'IgnorePolarity', ClustPar.IgnorePolarity);</pre></div></article>
+<article class="step" data-i="6"><div class="copy"><span class="chapter">07 / Backfitting</span><h2>Backfitting</h2><p>The sorted microstate maps are fitted back to the continuous EEG signal. At each eligible time point, the scalp pattern is assigned to its best-matching template map, producing a sequence of microstate labels for temporal analysis.</p><pre class="snippet">[EEG, CURRENTSET] = pop_FitMSMaps(ALLEEG, AllSubjects, 'TemplateSet', GrandGrandMeanIdx, 'FitPar', FitPar);</pre></div></article>
+<article class="step" data-i="7"><div class="copy"><span class="chapter">08 / Temporal variables</span><h2>Describe state dynamics.</h2><p>The fitted sequence yields occurrence, mean duration, coverage, individual explained variance, and total explained variance where applicable. These variables are compared between groups with rank-sum tests.</p></div></article>
+<article class="step" data-i="8"><div class="copy"><span class="chapter">09 / Orthogonalized AEC</span><h2>Measure connectivity inside each state.</h2><p>Orthogonalized amplitude-envelope correlation (AEC) measures whether the amplitudes of two EEG channels rise and fall together during a microstate. For each participant and frequency band, we select the samples assigned to that microstate and derive amplitude envelopes using the Hilbert transform. We orthogonalize each channel pair in both directions to reduce the influence of shared zero-lag activity, then average the two correlations into one symmetric connectivity value.</p></div></article>
+<article class="step" data-i="9"><div class="copy"><span class="chapter">10 / Edge vectors</span><h2>Compare each independent connection.</h2><p>Every connectivity matrix is reduced to its upper triangle. HC and PwMS edge-value distributions are compared using a Mann–Whitney rank-sum test for each band and microstate.</p><pre class="snippet">pVec(e) = ranksum(HC(:,e), PW(:,e));</pre></div></article>
+<article class="step" data-i="10"><div class="copy"><span class="chapter">11 / Graph measures</span><h2>Connectivity becomes a weighted graph.</h2><p>Each connectivity matrix is represented as a weighted, undirected graph: electrodes are nodes, and off-diagonal AEC values define connection weights. Graph metrics describe how strongly electrodes connect, how the network is organized, and how efficiently information can travel through it.</p><p>The pipeline calculates:</p><ul class="metrics-list"><li>Degree, closeness, betweenness, and eigenvector centrality</li><li>Clustering coefficient, path length, and efficiency</li><li>Modularity and assortativity</li></ul></div></article>
+<article class="step" data-i="11"><div class="copy"><span class="chapter">12 / Summaries, tests & ranking</span><h2>Graph features</h2><p>Subject-level graph measures are summarized by mean and skewness. We compare graph features between HCs and PwMS, then examine effect sizes and ROC/AUC to see which features distinguish the groups. Rank-sum tests and node-wise FDR correction keep the statistical interpretation separate from that exploratory ranking.</p><p class="em">Features: frequency band · mean/skewness · graph metrics</p><pre class="snippet">[p, h, stats] = ranksum(xHC, xPW);
+pVals(ch) = p;
+
+if isfield(stats, 'zval') &amp;&amp; ~isempty(stats.zval)
+    effVals(ch) = stats.zval / sqrt(nSub);
+end</pre></div></article>
+</section></main><footer class="footer">Synthetic scrollytelling prototype based on the project’s MATLAB methodology and report.</footer>
+<script>if(!window.IntersectionObserver)window.IntersectionObserver=class{constructor(){}observe(){}};</script>
+<script>
+const s=document.querySelector('#s'),mapLayer=document.querySelector('#map-layer'),H=document.querySelector('#h'),G=document.querySelector('#t'),R=document.querySelector('#r'),N='http://www.w3.org/2000/svg',C=['#0876b9','#db6427','#e5b22d','#75429a','#78a82f','#a61f3f'],A=(x,o={},z='')=>{let e=document.createElementNS(N,x);Object.entries(o).forEach(([k,v])=>e.setAttribute(k,v));e.textContent=z;s.append(e);return e},T=(x,y,z,n=14,c='#51636e',q='start')=>A('text',{x,y,'font-size':n,fill:c,'text-anchor':q,'font-family':'Inter, sans-serif'},z),L=(a,b,c,d,k='#d1dde1',w=1)=>A('line',{x1:a,y1:b,x2:c,y2:d,stroke:k,'stroke-width':w}),F=(a,b)=>{s.replaceChildren();mapLayer.replaceChildren();L(45,610,955,610,'#dce6e8');L(45,90,45,610,'#edf2f3');T(35,43,a,15,'#1d3440');T(35,66,b,11,'#7a8a93')},W=(a,b)=>{s.replaceChildren();mapLayer.replaceChildren();L(45,610,955,610,'#dce6e8');L(45,90,45,610,'#edf2f3');T(42,48,a,16,'#1d3440');T(42,72,b,11,'#7a8a93')};
+function backfit(box){F(box?'TEMPORAL MICROSTATE DYNAMICS':'BACKFITTING','synthetic labelled microstate sequence');let x=55,i=0,seg=[];while(x<945){let w=28+(i*29)%75;seg.push([x,w,i%6]);A('rect',{x,y:205,width:w,height:70,fill:C[i%6]});x+=w;i++}if(!box){seg.forEach(q=>T(q[0]+q[1]/2,185,'ABCDEG'[q[2]],13,C[q[2]],'middle'));T(55,155,'template labels assigned over time',12)}else{['A','B','C','D','E','G'].forEach((n,i)=>{let x=145+i*135;L(x,500,x,330);A('rect',{x:x-22,y:385-i%3*18,width:44,height:95+i%4*13,fill:C[i],opacity:.75});L(x-29,432,x+29,432,'#20343d',2);T(x,530,n,13,'#51636e','middle')});T(500,580,'synthetic occurrence · mean duration · coverage · explained variance',12,'#61727c','middle')}}
+function wave(x0,x1,y,phase,col,envelope=false){let p=[],up=[],lo=[];for(let x=x0;x<=x1;x+=3){let u=(x-x0)*.105+phase,amp=13+13*(.5+.5*Math.sin((x-x0)*.022+phase));p.push(x+','+(y+amp*Math.sin(u)));up.push(x+','+(y-amp));lo.push(x+','+(y+amp))}A('polyline',{points:p.join(' '),fill:'none',stroke:col,'stroke-width':1.4});if(envelope){A('polyline',{points:up.join(' '),fill:'none',stroke:col,'stroke-width':2.4,opacity:.82});A('polyline',{points:lo.join(' '),fill:'none',stroke:col,'stroke-width':2.4,opacity:.82})}}
+function aec(phase=0){W('ORTHOGONALIZED AEC','synthetic band-limited signals → envelope dynamics → connectivity');let env=phase>0,compare=phase>1,value=phase>2;T(70,115,'channel i · blue',12,C[0]);T(70,280,'channel j · orange',12,C[1]);wave(155,690,140,0,C[0],env);wave(155,690,305,1.2,C[1],env);if(env){T(155,390,'slow amplitude envelopes derived from analytic signals',12,'#687984');L(155,405,690,405,'#d7e1e4')}if(compare){wave(155,690,465,.5,C[0],true);wave(155,690,465,1.7,C[1],true);T(155,520,'compare co-fluctuation of the two envelope trajectories',12,'#687984')}if(value){A('circle',{cx:830,cy:450,r:66,fill:'#e7f3f7',stroke:C[0],'stroke-width':2});T(830,440,'AEC',16,C[0],'middle');T(830,465,'r = 0.31',17,'#1d3440','middle');T(830,493,'synthetic value',10,'#50646e','middle')}if(phase>3){for(let i=0;i<8;i++)for(let j=0;j<8;j++){let v=i==j?0:(Math.sin((i+j)*.9)+1)/2;A('rect',{x:770+j*17,y:535+i*17,width:16,height:16,fill:i==j?'#fff':'rgb('+(250-135*v)+','+(252-88*v)+','+(252-48*v)+')'})}A('rect',{x:821,y:586,width:16,height:16,fill:C[0],stroke:'#132933','stroke-width':2});T(838,635,'AEC value → matrix cell',11,'#50646e','middle')}}
+function hot(v){let r=Math.min(255,Math.round(80+220*v)),g=Math.min(255,Math.round(15+210*Math.max(0,v-.2))),b=Math.round(8+80*Math.max(0,v-.72));return 'rgb('+r+','+g+','+b+')'}
+function pColor(p){let u=Math.max(0,Math.min(1,p/.05));return u>.98?'#fbfcfc':'rgb('+(245-205*(1-u))+','+(247-218*(1-u))+','+(248-220*(1-u))+')'}
+function scalpField(cx,cy,r){for(let y=-r;y<=r;y+=8)for(let x=-r;x<=r;x+=8){let d=Math.hypot(x,y);if(d<r){let z=.55*Math.exp(-((x-22)**2+(y+15)**2)/(2*900))-.42*Math.exp(-((x+30)**2+(y-18)**2)/(2*750))+.15*Math.sin(x*.07)*Math.cos(y*.06),q=(z+1)/2;A('circle',{cx:cx+x,cy:cy+y,r:6,fill:'rgb('+(45+180*q)+','+(75+120*(1-q))+','+(175+55*(1-q))+')',opacity:.84})}}A('circle',{cx,cy,r,fill:'none',stroke:'#223942','stroke-width':2});A('path',{d:'M '+cx+' '+(cy-r)+' L '+(cx-12)+' '+(cy-r-20)+' L '+(cx+12)+' '+(cy-r-20)+' Z',fill:'#fff',stroke:'#223942','stroke-width':2});A('path',{d:'M '+(cx-r)+' '+(cy-25)+' q -18 25 0 50 M '+(cx+r)+' '+(cy-25)+' q 18 25 0 50',fill:'none',stroke:'#223942','stroke-width':2});for(let i=0;i<44;i++){let a=i*2.4,d=20+(r-18)*Math.sqrt(i/44);A('circle',{cx:cx+d*Math.cos(a),cy:cy+d*Math.sin(a),r:2.6,fill:'#182b34',opacity:.8})}}
+function edges(p,phase=0){if(p){W('P-VALUE MATRIX & TOPOGRAPHY','synthetic version of the MATLAB group-matrix / p-value-map output');const n=34,cell=11,oy=132,groups=[['HCs',45,.045],['PwMS',375,.008],['p-value map',705,0]],regions=['F','C','P','T','O'],rc=['#ef5a55','#62a95f','#568acb','#e3b347','#9d74b6'];function conn(v){return 'rgb('+(220+35*v)+','+(20+210*v)+','+(5+65*v)+')'}groups.forEach(([lab,ox,delta],g)=>{T(ox+n*cell/2,88,lab,22,g===0?'#17232d':g===1?'#17232d':'#17232d','middle');for(let i=0;i<n;i++)for(let j=0;j<n;j++){let v=i===j?null:Math.max(0,Math.min(1,.42+.26*Math.sin((i+j)*.31)+.18*Math.cos((i-j)*.48)+delta));let pv=i===j?null:Math.min(.05,.006+.035*(.5+.5*Math.sin((i+j)*.27))+.005*Math.cos((i-j)*.52));if(Math.abs(i-j)<3)pv=Math.min(.05,pv+.014);A('rect',{x:ox+j*cell,y:oy+i*cell,width:cell-.5,height:cell-.5,fill:v===null?'#ffffff':g===2?(pv<.018?pColor(pv):'#fbfcfc'):conn(v)})}for(let r=0;r<5;r++){let x=ox+r*6.8*cell;A('rect',{x,y:oy-8,width:6.8*cell,height:4,fill:rc[r]});A('rect',{x:ox-8,y:oy+r*6.8*cell,width:4,height:6.8*cell,fill:rc[r]})}if(g<2){for(let k=0;k<120;k++)A('rect',{x:ox+n*cell+8,y:oy+k*3,width:10,height:3.1,fill:conn(k/119)});T(ox+n*cell+13,oy-13,'AEC',9,'#51636e','middle')}});T(210,548,'HCs',12,'#17232d','middle');T(540,548,'PwMS',12,'#17232d','middle');T(870,548,'p-value map',12,'#17232d','middle');T(500,588,'synthetic matrix layout: ordered electrodes, shared regional rails, empty diagonal; p-value map shows only thresholded edges',11,'#657984','middle');return}W('EDGE VECTORS & RANK-SUM','synthetic subject-level, edge-wise comparison');function mat(x,y,label,delta,upper){T(x+72,y-16,label,12,label==='HCs'?C[0]:C[1],'middle');for(let i=0;i<10;i++)for(let j=0;j<10;j++){let v=i==j?0:Math.max(.04,Math.min(.98,.36+.26*Math.sin((i+j)*.62)+.18*Math.cos((i-j)*.9)+delta));A('rect',{x:x+j*14,y:y+i*14,width:13,height:13,fill:i==j?'#fff':hot(v),opacity:upper&&i>j?.08:1})}}let upper=phase>0;mat(48,160,'HCs',.05,upper);mat(48,390,'PwMS',-.04,upper);T(118,325,upper?'upper triangles':'full symmetric matrices',11,'#687984','middle');if(phase>1){mat(282,160,'HC upper triangle',.05,true);mat(282,390,'PwMS upper triangle',-.04,true);T(354,325,'independent edges',11,'#687984','middle');['HC edge vector','PwMS edge vector'].forEach((z,r)=>{let y=198+r*230;T(510,y-18,z,12,r?C[1]:C[0]);for(let i=0;i<20;i++)A('rect',{x:510+i*12,y,width:11,height:28,fill:hot(.25+.65*(.5+.5*Math.sin(i*.73+r)))})})}if(phase>2){T(805,145,'edge eᵢ across subjects',12,'#50646e','middle');for(let r=0;r<2;r++)for(let i=0;i<8;i++)A('circle',{cx:755+i*15,cy:205+r*72+(i%3)*8,r:5,fill:r?C[1]:C[0],opacity:.82});T(820,205,'HCs',10,C[0]);T(820,277,'PwMS',10,C[1]);L(755,325,885,325,'#94a8b1',1.5);T(820,357,'rank-sum test',13,'#1d3440','middle');T(820,382,'one p-value for edge eᵢ',10,'#687984','middle')}T(500,600,phase<1?'scroll: full matrices → upper triangles':phase<2?'upper triangles → edge vectors':'vectors → edge-wise rank-sum',12,'#687984','middle')}
+function graph(final){F(final?'GROUP SUMMARIES, ROC & FEATURE RANKING':'WEIGHTED GRAPH METRICS','synthetic network representation');if(final){['theta · skewness · betweenness','delta · mean · betweenness','theta · mean · betweenness','delta · mean · degree','delta · skewness · clustering'].forEach((z,i)=>{let y=150+i*66,w=355-i*36;T(60,y+22,z,13,'#344c57');A('rect',{x:400,y,width:w,height:31,fill:i==1||i==2?C[1]:'#2555c6'});if(i<3)A('rect',{x:397,y:y-3,width:w+6,height:37,fill:'none',stroke:'#1e3038','stroke-width':2})});T(500,570,'synthetic exploratory ranking · FDR correction may leave no surviving result',12,'#8b4341','middle')}else{let n=[];for(let i=0;i<34;i++){let q=i*2.4,r=35+185*Math.sqrt(i/34);n.push([500+r*Math.cos(q),315+r*.7*Math.sin(q)])}for(let i=0;i<n.length;i++)for(let j=i+1;j<n.length;j++)if((i*5+j*3)%16==0)L(n[i][0],n[i][1],n[j][0],n[j][1],'#9eb2bb',.8);n.forEach((q,i)=>A('circle',{cx:q[0],cy:q[1],r:5+i%7*1.5,fill:i%6==0?C[1]:C[0],stroke:'#fff'}));T(500,580,'nodes: electrodes · edge weight: orthogonalized AEC · size: centrality',12,'#61727c','middle')}}
+const V=[()=>s.replaceChildren(),()=>s.replaceChildren(),()=>maps(0),()=>maps(1),()=>maps(2),()=>maps(2,true),()=>backfit(),()=>backfit(true),()=>aec(0),()=>edges(false,0),()=>edges(true),()=>graph(),()=>graph(true)],D=[['01 — Microstates','signal representation','EEG → GFP → GFP peaks → scalp maps → clustering.'],['02 — GFP peaks','peak selection','Modified k-means is applied at GFP peaks.'],['03 — Individual maps','six-class k-means','Six synthetic interpolated scalp topographies.'],['04 — Group template','map hierarchy','Individual map sets combine into group templates.'],['05 — Grand Grand Mean','population template','The shared template carries into sorting and backfitting.'],['06 — Sorting','canonical correspondence','Koenig 2002 establishes consistent A–G labels.'],['07 — Backfitting','template projection','State labels return to continuous EEG time.'],['08 — Temporal variables','state dynamics','Synthetic distributions appear after the timeline.'],['09 — Orthogonalized AEC','envelope correlation','Hilbert envelopes are orthogonalized and correlated.'],['10 — Edge vectors','rank-sum test','Upper triangles become HC and PwMS edge vectors.'],['11 — P-value matrices','statistical topology','Edge tests return to symmetric matrix and scalp space.'],['12 — Graph metrics','weighted networks','Connectivity becomes a graph of electrodes and edges.'],['13 — Exploratory ranking','summaries · ROC · FDR','Raw effects, AUC, and corrected inference remain distinct.']];let current=-1;function draw(i){current=i;V[i]();H.textContent=D[i][0];G.textContent=D[i][1];R.textContent=String(i+1).padStart(2,'0')+' / 13 · '+D[i][2]}draw(0);new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)draw(+e.target.dataset.i)}),{threshold:.55}).observe(document.querySelector('.step'));document.querySelectorAll('.step').forEach(x=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)draw(+e.target.dataset.i)}),{threshold:.55}).observe(x));window.addEventListener('scroll',()=>{let b=document.querySelector('[data-i="9"]');for(let [el,fn] of [[b,(p)=>edges(false,p)]]){let r=el.getBoundingClientRect(),p=Math.max(0,Math.min(.999,(innerHeight-r.top)/(r.height+innerHeight)));if(r.top<innerHeight*.58&&r.bottom>innerHeight*.42)fn(Math.min(4,Math.floor(p*5)))}} ,{passive:true});
+</script><script>V.splice(10,1);D.splice(10,1);D[4][0]='05 — Grand-Grand Mean';D[10][0]='11 — Graph measures';D[11][0]='12 — Summaries, tests & ranking';R.textContent=R.textContent.replace(' / 13 · ',' / 12 · ');V.fill(()=>{});V[5]=()=>grandTemplateWithKoenigLabels(0);V[6]=()=>backfittingWithMapLinks(0);V[7]=()=>{if(typeof temporalDynamicsFromBackfit==='function')temporalDynamicsFromBackfit(0)};const legacyEdgesRenderer=edges;edges=(p,phase=0)=>p===false?undefined:legacyEdgesRenderer(p,phase);</script></body></html>
+<script>
+(() => {
+  const stage=document.querySelector('.stage'), visual=document.querySelector('#s');
+  const steps=[document.querySelector('[data-i="8"]'),document.querySelector('[data-i="9"]'),document.querySelector('[data-i="10"]')];
+  const resize=()=>{const active=steps.some(el=>{const r=el.getBoundingClientRect();return r.top<innerHeight*.58&&r.bottom>innerHeight*.42});visual.style.width=active?'97vw':'';visual.style.height=active?'86vh':'';stage.style.background=active?'#071520':''};
+  addEventListener('scroll',resize,{passive:true});resize();
+})();
+</script>
+<style>
+  /* Final Section 01 card override: matches the white methodology panels. */
+  .steps .step[data-i="0"] .section-one-copy {
+    background: #fff !important;
+    border: 1px solid rgba(196, 215, 222, .92) !important;
+    box-shadow: 0 18px 45px rgba(7, 31, 41, .13) !important;
+  }
+  .steps .step[data-i="0"] .section-one-copy h2 { color: #162832 !important; }
+  .steps .step[data-i="0"] .section-one-copy p { color: #4d606a !important; }
+  .steps .step[data-i="0"] .section-one-copy .em { color: #213943 !important; }
+</style>
+<style>
+  /* Final cascade position for the light hero theme. */
+  .hero { color: #17313c !important; background: #fff !important; }
+  .hero::before { opacity: calc(var(--cap-opacity) * .26) !important; filter: saturate(.55) contrast(.88) !important; }
+  .hero::after { background: linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.93) 48%, rgba(255,255,255,.72) 100%) !important; }
+  .hero .k { color: #0876b9 !important; }
+  .hero p { color: #3d5b67 !important; }
+  .stage.maps-stage, .stage.group-stage, .stage.grand-stage {
+    background-color: #fff !important;
+    background-image:
+      radial-gradient(circle at 50% 46%, rgba(76, 163, 193, .11), transparent 38%),
+      linear-gradient(90deg, rgba(27, 85, 105, .045) 1px, transparent 1px),
+      linear-gradient(rgba(27, 85, 105, .035) 1px, transparent 1px) !important;
+    background-size: auto, 5rem 5rem, 5rem 5rem !important;
+  }
+  .stage.maps-stage #map-layer img, .stage.group-stage #map-layer img, .stage.grand-stage #map-layer img {
+    border-color: #496773 !important;
+    box-shadow: 0 0 0 4px rgba(30, 130, 164, .10), 0 10px 24px rgba(15, 48, 60, .14) !important;
+  }
+</style>
+<style>
+  /* Final cascade position for the light hero theme. */
+  .hero { color: #17313c !important; background: #fff !important; }
+  .hero::before { opacity: calc(var(--cap-opacity) * .26) !important; filter: saturate(.55) contrast(.88) !important; }
+  .hero::after { background: linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.93) 48%, rgba(255,255,255,.72) 100%) !important; }
+  .hero .k { color: #0876b9 !important; }
+  .hero p { color: #3d5b67 !important; }
+</style>
+<style>
+  /* Light presentation theme: changes palette only; SVG scenes, images, and motion are preserved. */
+  :root { --page: #ffffff; --paper: rgba(255, 255, 255, .96); --deep: #17313c; }
+  body { background: #fff; }
+  .privacy { background: rgba(255, 255, 255, .98); color: #3d5b67; }
+  .hero { color: #17313c; background: #fff; }
+  .hero::after { background: linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.93) 48%, rgba(255,255,255,.72) 100%); }
+  .hero .k { color: #0876b9; }
+  .hero p { color: #3d5b67; }
+  .hero::before { opacity: calc(var(--cap-opacity) * .26); filter: saturate(.55) contrast(.88); }
+
+  .stage,
+  .stage.signal-stage,
+  .stage.gfp-stage,
+  .stage.gfp-stage.gfp-rest,
+  .stage.maps-stage,
+  .stage.group-stage,
+  .stage.grand-stage,
+  .stage.sort-stage,
+  .stage.backfit-stage,
+  .stage.temporal-stage,
+  .stage.aec-stage,
+  .stage.edge-stage,
+  .stage.pvalue-stage,
+  .stage.graph-stage,
+  .stage.summary-stage {
+    background-color: #fff !important;
+    background-image:
+      radial-gradient(circle at 50% 46%, rgba(76, 163, 193, .11), transparent 38%),
+      linear-gradient(90deg, rgba(27, 85, 105, .045) 1px, transparent 1px),
+      linear-gradient(rgba(27, 85, 105, .035) 1px, transparent 1px) !important;
+    background-size: auto, 5rem 5rem, 5rem 5rem !important;
+  }
+  .stage.signal-stage { background-image: linear-gradient(rgba(255,255,255,.84), rgba(255,255,255,.84)), url('eeg-sparse-section-01.png') !important; background-size: cover !important; }
+  .stage.gfp-stage:not(.maps-stage) { background-image: linear-gradient(rgba(255,255,255,.84), rgba(255,255,255,.84)), url('gfp-peaks-section-02.png') !important; background-size: cover !important; }
+  .stage::after { opacity: calc(var(--gfp-opacity) * .14) !important; filter: saturate(.4) contrast(.82) brightness(1.55); }
+  .stage:before { background: linear-gradient(90deg, transparent 0 49.92%, rgba(31, 84, 102, .12) 50%, transparent 50.08%); }
+  .hud, .stage.signal-stage .hud, .stage.signal-stage .hud b, .rail, .stage.signal-stage .rail { color: #58717b; }
+  .hud b { color: #17313c !important; }
+  .rail:before { border-color: #8ca8b2; }
+
+  .stage svg text[fill="#d7e6eb"], .stage svg text[fill="#c8d9de"] { fill: #17313c !important; }
+  .stage svg text[fill="#9bb3bc"], .stage svg text[fill="#9ab3bd"] { fill: #58717b !important; }
+  .stage svg text[fill="#b8cbd1"] { fill: #4f6a75 !important; }
+  .stage svg line[stroke="#d7e6eb"], .stage svg path[stroke="#d7e6eb"] { stroke: #496773 !important; }
+  .stage svg line[stroke="#f1f7f8"], .stage svg line[stroke="#eef8fa"] { stroke: #17313c !important; }
+  .stage svg rect[fill="#0c2531"] { fill: #edf5f7 !important; }
+  .stage svg rect[fill="#071520"] { fill: #fff !important; }
+  .stage.maps-stage #map-layer img, .stage.group-stage #map-layer img, .stage.grand-stage #map-layer img { border-color: #496773 !important; box-shadow: 0 0 0 4px rgba(30, 130, 164, .10), 0 10px 24px rgba(15, 48, 60, .14) !important; }
+
+  .copy, .steps .step[data-i="0"] .section-one-copy { background: #fff !important; }
+  .footer { color: #4b6671; background: #fff; border-top: 1px solid #d6e3e7; }
+</style>
+<style>
+  /* Allow the p-value matrix to form before the graph image appears. */
+  .step[data-i="10"]{min-height:155svh;align-items:flex-end;padding-bottom:7vh}
+  .step[data-i="10"] .copy{margin-left:auto!important}
+</style>
+<style>
+  /* Portfolio polish: presentation only. The existing scene functions and motion remain unchanged. */
+  :root {
+    --page: #eaf1f3;
+    --paper: rgba(255, 255, 255, .94);
+    --deep: #071520;
+    --accent: #5ad0f4;
+    --copy-width: 31rem;
+  }
+
+  body {
+    background: var(--page);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  .skip-link {
+    position: fixed;
+    z-index: 20;
+    top: .75rem;
+    left: 1rem;
+    padding: .7rem .9rem;
+    color: #fff;
+    background: var(--deep);
+    border: 1px solid var(--accent);
+    transform: translateY(-160%);
+  }
+
+  .skip-link:focus { transform: translateY(0); }
+  :focus-visible { outline: 3px solid #5ad0f4; outline-offset: 4px; }
+
+  .privacy {
+    padding: .72rem 1.25rem;
+    color: #46616d;
+    background: rgba(234, 241, 243, .97);
+    border-bottom: 1px solid rgba(130, 163, 175, .35);
+    font-size: .65rem;
+    line-height: 1.3;
+  }
+
+  .hero { padding: 0 clamp(1.5rem, 7vw, 7rem) clamp(5rem, 12vh, 8rem); }
+  .hero .k { display: block; margin-bottom: .15rem; color: var(--accent); }
+  .hero h1 {
+    max-width: 16ch;
+    font-family: Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif;
+    font-size: clamp(3rem, 6.4vw, 6.8rem);
+    line-height: .98;
+    letter-spacing: -.055em;
+  }
+  .hero p { max-width: 41rem; font-size: clamp(1rem, 1.3vw, 1.13rem); }
+
+  .hud { top: clamp(4.8rem, 8vh, 6.5rem); gap: 1rem; line-height: 1.35; }
+  .rail { max-width: min(62rem, 84vw); line-height: 1.45; }
+  .stage::before { opacity: .62; }
+
+  .copy, .step[data-i="0"] .section-one-copy {
+    width: min(var(--copy-width), 43vw);
+    padding: clamp(1.35rem, 2.2vw, 2rem);
+    border: 1px solid rgba(196, 215, 222, .92);
+    border-radius: .2rem;
+    box-shadow: 0 18px 45px rgba(7, 31, 41, .13);
+  }
+  .copy { background: var(--paper); }
+  .step[data-i="11"] .copy { margin-left: 0; }
+  .step[data-i="0"] .section-one-copy {
+    background: var(--paper);
+    border-color: rgba(196, 215, 222, .92);
+    box-shadow: 0 18px 45px rgba(7, 31, 41, .13);
+  }
+  .step[data-i="0"] .section-one-copy h2 { color: var(--ink); }
+  .step[data-i="0"] .section-one-copy p { color: #4d606a; }
+  .step[data-i="0"] .section-one-copy .em { color: #213943 !important; }
+  .copy h2, .section-one-copy h2 {
+    font-family: Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif;
+    letter-spacing: -.042em;
+  }
+  .copy p, .section-one-copy p { max-width: 60ch; font-size: .95rem; }
+  .chapter { display: inline-block; line-height: 1.4; }
+  .snippet {
+    overflow-x: auto;
+    border-radius: 0 .15rem .15rem 0;
+    tab-size: 2;
+  }
+  .footer { padding: clamp(4rem, 9vh, 7rem) 1.5rem; line-height: 1.55; }
+
+  @media (max-width: 760px) {
+    .privacy { padding-right: 3.5rem; text-align: left; }
+    .hero { min-height: 100svh; padding: 0 1.5rem 4.5rem; }
+    .hero h1 { max-width: 11ch; font-size: clamp(2.7rem, 12vw, 4.2rem); }
+    .hud { top: 4.4rem; align-items: flex-start; font-size: .62rem; }
+    .hud span { max-width: 42%; text-align: right; }
+    .rail { bottom: 1.25rem; max-width: 86vw; font-size: .67rem; }
+    .rail::before { width: 2.5rem; }
+    .steps { padding: 0 1rem 6vh; }
+    .step, .step:nth-child(even) { align-items: end; padding-bottom: 5.25rem; }
+    .copy, .step[data-i="0"] .section-one-copy, .step:nth-child(even) .copy {
+      width: 100%;
+      margin: 0;
+      padding: 1.3rem;
+    }
+    .copy h2, .section-one-copy h2 { font-size: clamp(2rem, 9vw, 2.8rem); }
+    .copy p, .section-one-copy p { font-size: .93rem; }
+  }
+
+  @media (prefers-contrast: more) {
+    .copy { border-color: #66808b; background: #fff; }
+    .copy p { color: #203842; }
+  }
+</style>
+<script>
+/* The SVG remains one scientific surface. Each local scene borrows a visual
+   object from the preceding analytical operation instead of starting a new slide. */
+function signalToMaps(p){
+  let q=[];for(let x=60;x<430;x+=4){let u=x/19;q.push(x+','+(123-7*Math.sin(u*1.7)-4*Math.sin(u*.42)))}
+  A('polyline',{points:q.join(' '),fill:'none',stroke:'#506570','stroke-width':1,opacity:.42});
+  [142,268,390].forEach((x,i)=>{let y=123-7*Math.sin(x/19*1.7)-4*Math.sin(x/19*.42);L(x,y+4,165+i*280,184,'#9eb0b8',1);A('circle',{cx:x,cy:y,r:3+2*p,fill:C[i],opacity:.8})});
+}
+function referenceTopo(cx,cy,r,i,opacity=1){const stageRect=document.querySelector('.stage').getBoundingClientRect(),svgRect=s.getBoundingClientRect(),scale=Math.min(svgRect.width/1000,svgRect.height/650),image=document.createElement('img'),x=svgRect.left-stageRect.left+cx/1000*svgRect.width,y=svgRect.top-stageRect.top+cy/650*svgRect.height,size=2*r*scale;image.src='microstate-map-0'+(i+1)+'.png?v=template-crops-20260917';image.alt='';image.style.cssText='left:'+(x-size/2)+'px;top:'+(y-size/2)+'px;width:'+size+'px;height:'+size+'px;opacity:'+opacity;mapLayer.append(image)}
+function gfpToMaps(p){
+  s.replaceChildren();mapLayer.replaceChildren();p=Math.max(0,Math.min(1,p));
+  const peaks=[142,268,390,515,651,777],mapsX=[140,292,444,596,748,900],curveY=x=>190-(18+32*Math.pow(Math.sin(x/74),8)+12*Math.pow(Math.sin(x/41+1),6));
+  let curve=[];for(let x=65;x<940;x+=4)curve.push(x+','+curveY(x));
+  A('polyline',{points:curve.join(' '),fill:'none',stroke:'#36a9e6','stroke-width':2.4,opacity:.95});
+  peaks.forEach((px,i)=>{const py=curveY(px),mx=mapsX[i],my=410,reach=Math.max(0,Math.min(1,(p-.08)*1.35)),ex=px+(mx-px)*reach,ey=py+(my-py)*reach;L(px,py,ex,ey,'#8ccce9',1.3);A('circle',{cx:px,cy:py,r:5,fill:'#38aae6',stroke:'#d9f1fb','stroke-width':1.5});if(reach>.02)referenceTopo(mx,my,64*reach,i,reach)});
+}
+function templateToTime(p){
+  let x0=130;['A','B','C','D','E','G'].forEach((n,i)=>{let x=x0+i*104;A('circle',{cx:x,cy:115,r:15,fill:C[i],opacity:.82});T(x,120,n,10,'#fff','middle');L(x,132,55+i*148,192,'#b9c8ce',1)});
+  A('path',{d:'M 55 192 H 945',stroke:'#b8c7cd','stroke-width':1,fill:'none',opacity:.7});
+}
+function timelineSeed(opacity=.5){
+  let x=55,i=0;while(x<945){let w=28+(i*29)%75;A('rect',{x,y:104,width:w,height:17,fill:C[i%6],opacity});x+=w;i++}
+}
+function envelopeToMatrix(p){
+  let x=770,y=122;for(let i=0;i<7;i++)for(let j=0;j<7;j++){let v=i===j?0:(Math.sin((i+j)*.9)+1)/2;A('rect',{x:x+j*12,y:y+i*12,width:11,height:11,fill:i===j?'#fff':hot(v),opacity:.2+.7*p})}
+}
+function matrixToNetwork(opacity=.24){
+  let x=90,y=138,n=10;for(let i=0;i<n;i++)for(let j=0;j<n;j++){let v=i===j?0:(Math.sin((i+j)*.62)+1)/2;A('rect',{x:x+j*9,y:y+i*9,width:8,height:8,fill:i===j?'#fff':hot(v),opacity})}
+  let pts=[];for(let i=0;i<15;i++){let a=i*2.4,r=25+75*Math.sqrt(i/15);pts.push([x+190+r*Math.cos(a),y+50+r*.7*Math.sin(a)])}for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++)if((i*5+j*3)%16==0)L(pts[i][0],pts[i][1],pts[j][0],pts[j][1],'#77919b',.8);pts.forEach(q=>A('circle',{cx:q[0],cy:q[1],r:3,fill:'#0876b9',opacity}));
+}
+function groupTemplate(p){
+  s.replaceChildren();mapLayer.replaceChildren();p=Math.max(0,Math.min(1,p));
+  const cols=[{label:'HCS',x:96},{label:'PwMS',x:596}];
+  cols.forEach(col=>{T(col.x+152,110,col.label,16,'#d7e6eb','middle');for(let i=0;i<6;i++)referenceTopo(col.x+i*61,330,36,i,p)});
+}
+const sourceMapPositions=[140,292,444,596,748,900];
+const compactMapPosition=(group,i)=>({x:(group?596:96)+i*61,y:330});
+const finalMapPosition=(group,i)=>({x:(group?596:96)+i*61,y:330});
+const clamp01=value=>Math.max(0,Math.min(1,value));
+const between=(start,end,amount)=>start+(end-start)*amount;
+function groupLabels(opacity=1){const hc=T(248,110,'HCS',16,'#d7e6eb','middle'),pw=T(748,110,'PwMS',16,'#d7e6eb','middle');hc.setAttribute('opacity',opacity);pw.setAttribute('opacity',opacity)}
+const subjectMapPosition=(group,row,i)=>({x:(group?596:96)+i*61,y:row?485:200});
+function subjectLabels(opacity=1){
+  const labels=[[248,132,'subj1_HCs'],[748,132,'subj1_PwMS'],[248,415,'subjN_HCs'],[748,415,'subjN_PwMS']];
+  labels.forEach(([x,y,label])=>{const text=T(x,y,label,12,'#d7e6eb','middle');text.setAttribute('font-weight','700');text.setAttribute('opacity',opacity)});
+  const ellipsis=T(500,347,'⋮',31,'#8ecce2','middle');ellipsis.setAttribute('font-weight','700');ellipsis.setAttribute('opacity',opacity);
+}
+function formGroupColumns(progress){
+  progress=clamp01(progress);gfpToMaps(1);[...s.children].forEach(node=>node.style.opacity=String(1-progress));mapLayer.replaceChildren();
+  sourceMapPositions.forEach((x,i)=>{
+    referenceTopo(x,410,64,i,1-progress);
+    [0,1].forEach(group=>[0,1].forEach(row=>{
+      const target=subjectMapPosition(group,row,i);
+      referenceTopo(between(x,target.x,progress),between(410,target.y,progress),between(64,20,progress),i,progress);
+    }));
+  });
+  subjectLabels(progress);
+}
+function consolidateGroupTemplates(progress){
+  progress=clamp01(progress);s.replaceChildren();mapLayer.replaceChildren();subjectLabels(1-progress);groupLabels(progress);
+  [0,1].forEach(group=>{for(let i=0;i<6;i++){
+    const target=finalMapPosition(group,i);
+    [0,1].forEach(row=>{
+      const start=subjectMapPosition(group,row,i);
+      referenceTopo(between(start.x,target.x,progress),between(start.y,target.y,progress),between(20,36,progress),i,1-progress);
+    });
+    referenceTopo(target.x,target.y,36,i,progress);
+  }});
+}
+const grandMapPosition=i=>({x:300+i*80,y:330});
+function fuseGroupTemplates(progress){
+  progress=clamp01(progress);s.replaceChildren();mapLayer.replaceChildren();groupLabels(1-progress);
+  if(progress>=.999){for(let i=0;i<6;i++){const target=grandMapPosition(i);referenceTopo(target.x,target.y,44,i)}return}
+  [0,1].forEach(group=>{for(let i=0;i<6;i++){const start=finalMapPosition(group,i),target=grandMapPosition(i);referenceTopo(between(start.x,target.x,progress),between(start.y,target.y,progress),between(36,44,progress),i)}});
+}
+function grandTemplateWithKoenigLabels(progress){
+  progress=clamp01(progress);s.replaceChildren();mapLayer.replaceChildren();
+  ['A','B','C','D','E','G'].forEach((label,i)=>{const map=grandMapPosition(i),reveal=clamp01(progress*6-i);referenceTopo(map.x,map.y,44,i);const text=T(map.x,map.y+70,label,18,'#d7e6eb','middle');text.setAttribute('font-weight','700');text.setAttribute('opacity',reveal)});
+}
+function backfittingWithMapLinks(progress){
+  progress=clamp01(progress);s.replaceChildren();mapLayer.replaceChildren();
+  const heading=T(500,68,'COMMON TEMPLATE → CONTINUOUS EEG',12,'#9bbfc9','middle');heading.setAttribute('font-weight','700');heading.setAttribute('letter-spacing','.09em');
+  L(54,151,946,151,'#34515c',.8).setAttribute('opacity','.7');
+  const targets=[459,526,584,633,712,782];let x=55,i=0;while(x<945){const width=28+(i*29)%75,color=C[i%6],trace=[];for(let point=x;point<=x+width;point+=2){const y=183+6*Math.sin(point*.13)+3*Math.sin(point*.041+.8);trace.push(point+','+y)}A('polyline',{points:trace.join(' '),fill:'none',stroke:color,'stroke-width':2.35,'stroke-linecap':'round','stroke-linejoin':'round'});A('rect',{x,y:205,width,height:70,fill:color});x+=width;i++}
+  T(55,294,'assigned microstate sequence',11,'#9bb3bc');
+  const lineProgress=clamp01(progress*1.15),labels=['A','B','C','D','E','G'];
+  labels.forEach((label,index)=>{const source=grandMapPosition(index),targetX=targets[index],mapX=between(source.x,targetX,progress),mapY=between(source.y,130,progress),radius=between(44,30,progress),lineStartY=mapY+radius,lineEndY=lineStartY+(205-lineStartY)*lineProgress,link=L(mapX,lineStartY,targetX,lineEndY,C[index],2);link.setAttribute('opacity',String(.48+.52*lineProgress));A('circle',{cx:targetX,cy:205,r:3.2,fill:C[index],stroke:'#d7e6eb','stroke-width':1});referenceTopo(mapX,mapY,radius,index);const text=T(mapX,between(source.y+70,mapY-radius-12,progress),label,15,C[index],'middle');text.setAttribute('font-weight','700')});
+}
+function temporalDynamicsFromBackfit(progress){
+  progress=clamp01(progress);backfittingWithMapLinks(1);
+  const metrics=[
+    ['Coverage',342,[.52,.69,.41,.61,.47,.57]],
+    ['Occurrence',425,[.46,.63,.36,.55,.49,.66]],
+    ['Mean duration',508,[.59,.38,.71,.48,.55,.43]]
+  ];
+  const temporalHeading=T(500,314,'TEMPORAL VARIABLES',12,'#9bbfc9','middle');temporalHeading.setAttribute('font-weight','700');temporalHeading.setAttribute('letter-spacing','.09em');temporalHeading.setAttribute('opacity',progress);
+  metrics.forEach(([label,targetY,values],metricIndex)=>{
+    const reveal=clamp01(progress*1.3-metricIndex*.14),y=between(285,targetY,reveal);
+    A('rect',{x:180,y:y-29,width:720,height:58,fill:'#0c2531',opacity:reveal*.34,rx:3});
+    const metricLabel=T(58,y+5,label,13,'#d7e6eb');metricLabel.setAttribute('opacity',reveal);
+    L(180,y,900,y,'#41606c',.8).setAttribute('opacity',reveal*.55);
+    values.forEach((value,index)=>{
+      const center=236+index*112;
+      [['HCs','#cf4d43'],['PwMS','#0876b9']].forEach((group,groupIndex)=>{
+        const x=center+(groupIndex===0?-16:16),medianY=between(y,y-(value-.5)*14+(groupIndex===0?3:-3),reveal),whiskerHalf=19*reveal,boxHalf=8*reveal;
+        const whisker=L(x,medianY-whiskerHalf,x,medianY+whiskerHalf,group[1],1.4);whisker.setAttribute('opacity',reveal);
+        const topCap=L(x-6,medianY-whiskerHalf,x+6,medianY-whiskerHalf,group[1],1.4);topCap.setAttribute('opacity',reveal);
+        const bottomCap=L(x-6,medianY+whiskerHalf,x+6,medianY+whiskerHalf,group[1],1.4);bottomCap.setAttribute('opacity',reveal);
+        A('rect',{x:x-10,y:medianY-boxHalf,width:20,height:boxHalf*2,fill:group[1],opacity:reveal*.76,rx:1});
+        const median=L(x-10,medianY,x+10,medianY,'#fff',1.5);median.setAttribute('opacity',reveal);
+      });
+      const state=T(center,y+33,'ABCDEG'[index],10,C[index],'middle');state.setAttribute('font-weight','700');state.setAttribute('opacity',reveal);
+    });
+  });
+  const note=T(500,564,'illustrative subject-level distributions by microstate class',11,'#9bb3bc','middle');note.setAttribute('opacity',progress);
+  const hcLegend=T(445,592,'■ HCs',11,'#cf4d43','middle');hcLegend.setAttribute('font-weight','700');hcLegend.setAttribute('opacity',progress);
+  const pwmsLegend=T(555,592,'■ PwMS',11,'#0876b9','middle');pwmsLegend.setAttribute('font-weight','700');pwmsLegend.setAttribute('opacity',progress);
+}
+function aecColumnsFromSignals(progress){
+  progress=clamp01(progress);s.replaceChildren();mapLayer.replaceChildren();
+  const rawReveal=clamp01(progress*3),envelopeReveal=clamp01(progress*3-1),correlationReveal=clamp01(progress*3-2);
+  const rawTrace=(x0,x1,y,phase,color,opacity=1,width=1.8)=>{const points=[];for(let x=x0;x<=x1;x+=3){const amplitude=11+8*Math.sin(x*.029+phase)+4*Math.sin(x*.071+phase);points.push(x+','+(y+amplitude*Math.sin(x*.18+phase)+2*Math.sin(x*.51+phase)))}const path=A('polyline',{points:points.join(' '),fill:'none',stroke:color,'stroke-width':width,'stroke-linecap':'round','stroke-linejoin':'round'});path.setAttribute('opacity',opacity);};
+  const envelopeTrace=(x0,x1,y,phase,color,opacity=1)=>{const points=[];for(let x=x0;x<=x1;x+=3){points.push(x+','+(y-14*Math.sin(x*.037+phase)-7*Math.sin(x*.081+phase)))}const path=A('polyline',{points:points.join(' '),fill:'none',stroke:color,'stroke-width':2.7,'stroke-linecap':'round','stroke-linejoin':'round'});path.setAttribute('opacity',opacity);};
+  const title=(x,label,reveal)=>{const text=T(x,128,label,12,'#d7e6eb','middle');text.setAttribute('font-weight','700');text.setAttribute('letter-spacing','.08em');text.setAttribute('opacity',reveal)};
+  title(180,'TWO EEG CHANNELS',rawReveal);title(505,'HILBERT ENVELOPES',envelopeReveal);title(825,'ENVELOPE CORRELATION',correlationReveal);
+  const dividerOne=L(342,158,342,472,'#31505c',.8);dividerOne.setAttribute('opacity',rawReveal*.45);
+  const dividerTwo=L(674,158,674,472,'#31505c',.8);dividerTwo.setAttribute('opacity',envelopeReveal*.45);
+  if(rawReveal>0){
+    ['channel i','channel j'].forEach((label,index)=>{const y=230+index*132;const tag=T(72,y-32,label,11,C[index]);tag.setAttribute('opacity',rawReveal);L(72,y,300,y,'#34515c',.7).setAttribute('opacity',rawReveal*.5);rawTrace(72,300,y,index*.9,C[index],rawReveal);});
+  }
+  if(envelopeReveal>0){
+    [0,1].forEach(index=>{const y=230+index*132;const carrierOpacity=envelopeReveal*.2;L(390,y,620,y,'#34515c',.7).setAttribute('opacity',envelopeReveal*.5);rawTrace(390,620,y,index*.9,C[index],carrierOpacity,1.1);envelopeTrace(390,620,y,index*.9,C[index],envelopeReveal);const tag=T(390,y-32,index===0?'envelope i':'envelope j',11,C[index]);tag.setAttribute('opacity',envelopeReveal);});
+    const connector=L(317,296,372,296,'#88b9cb',1.2);connector.setAttribute('opacity',envelopeReveal);A('path',{d:'M 372 296 l -8 -5 M 372 296 l -8 5',fill:'none',stroke:'#88b9cb','stroke-width':1.2,opacity:envelopeReveal});
+  }
+  if(correlationReveal>0){
+    const label=T(825,258,'co-modulation',13,'#d7e6eb','middle');label.setAttribute('opacity',correlationReveal);
+    const x=714,y=326,w=222,h=22,ratio=.72;
+    const outline=A('rect',{x,y,width:w,height:h,fill:'none',stroke:'#7da8b8','stroke-width':1,rx:2});outline.setAttribute('opacity',correlationReveal);
+    const fill=A('rect',{x,y,width:w*ratio,height:h,fill:C[0],opacity:correlationReveal*.82,rx:2});
+    const marker=A('line',{x1:x+w*ratio,y1:y-7,x2:x+w*ratio,y2:y+h+7,stroke:'#f4f8f9','stroke-width':2});marker.setAttribute('opacity',correlationReveal);
+    ['0','low','high','1'].forEach((label,index)=>{const tx=[x,x+w*.25,x+w*.75,x+w][index],anchor=index===0?'start':index===3?'end':'middle';const tick=T(tx,374,label,10,'#9ab3bd',anchor);tick.setAttribute('opacity',correlationReveal)});
+    const result=T(825,414,'orthogonalized AEC',15,'#d7e6eb','middle');result.setAttribute('font-weight','700');result.setAttribute('opacity',correlationReveal);
+    const arrow=L(637,296,694,296,'#88b9cb',1.2);arrow.setAttribute('opacity',correlationReveal);A('path',{d:'M 694 296 l -8 -5 M 694 296 l -8 5',fill:'none',stroke:'#88b9cb','stroke-width':1.2,opacity:correlationReveal});
+  }
+}
+function edgeVectorsFromAec(progress){
+  progress=clamp01(progress);s.replaceChildren();mapLayer.replaceChildren();
+  const matrices=clamp01(progress*4),upperTriangle=clamp01(progress*4-1),vectors=clamp01(progress*4-2),pValues=clamp01(progress*4-3);
+  const value=(row,column,group)=>clamp01(.42+.24*Math.sin((row+column)*.58+group*.4)+.18*Math.cos((row-column)*.83+group*.3));
+  const edgeValues=group=>{const values=[];for(let row=0;row<12&&values.length<26;row++)for(let column=row+1;column<12&&values.length<26;column++)values.push(value(row,column,group));return values};
+  const drawSeed=opacity=>{if(opacity<=0)return;const x=714,y=326,w=222,h=22,ratio=.72;const label=T(825,258,'co-modulation',13,'#d7e6eb','middle');label.setAttribute('opacity',opacity);const outline=A('rect',{x,y,width:w,height:h,fill:'none',stroke:'#7da8b8','stroke-width':1,rx:2});outline.setAttribute('opacity',opacity);A('rect',{x,y,width:w*ratio,height:h,fill:C[0],opacity:opacity*.82,rx:2});const marker=A('line',{x1:x+w*ratio,y1:y-7,x2:x+w*ratio,y2:y+h+7,stroke:'#f4f8f9','stroke-width':2});marker.setAttribute('opacity',opacity);const result=T(825,414,'orthogonalized AEC',15,'#d7e6eb','middle');result.setAttribute('font-weight','700');result.setAttribute('opacity',opacity)};
+  drawSeed(1-matrices);
+  const drawMatrix=(group,label)=>{
+    if(matrices<=0)return;
+    const n=12,cell=17*matrices,width=n*cell,startCenter=500,startY=310,endX=group?535:115,endY=174,x=between(startCenter-width/2,endX,matrices),y=between(startY,endY,matrices),opacity=(1-vectors)*matrices;
+    A('rect',{x:x-14,y:y-40,width:width+28,height:width+76,fill:'#0c2531',opacity:opacity*.46,rx:4});
+    const title=T(x+width/2,y-20,label,16,'#d7e6eb','middle');title.setAttribute('font-weight','700');title.setAttribute('opacity',opacity);
+    for(let row=0;row<n;row++)for(let column=0;column<n;column++){
+      const diagonal=row===column,lower=row>column,cellOpacity=diagonal?0:opacity*(lower?1-upperTriangle*.9:1);
+      A('rect',{x:x+column*cell,y:y+row*cell,width:cell-.65,height:cell-.65,fill:diagonal?'#071520':hot(value(row,column,group)),opacity:cellOpacity});
+    }
+    const caption=T(x+width/2,y+width+22,upperTriangle>.02?'upper triangle: independent edges':'symmetric connectivity matrix',10,'#9ab3bd','middle');caption.setAttribute('opacity',opacity);
+  };
+  drawMatrix(0,'HCS');drawMatrix(1,'PwMS');
+  const matrixPhase=T(500,94,'CONNECTIVITY MATRICES',11,'#9bbfc9','middle');matrixPhase.setAttribute('font-weight','700');matrixPhase.setAttribute('letter-spacing','.09em');matrixPhase.setAttribute('opacity',(1-vectors)*matrices);
+  if(matrices>0){
+    const opacity=(1-vectors)*matrices,x=800,y=184,h=200;
+    for(let index=0;index<70;index++)A('rect',{x,y:y+index*h/70,width:14,height:h/70+.3,fill:hot(1-index/69),opacity});
+    const hi=T(x+22,y+8,'high',10,'#9ab3bd');hi.setAttribute('opacity',opacity);const lo=T(x+22,y+h,'low',10,'#9ab3bd');lo.setAttribute('opacity',opacity);const lab=T(x+7,y-13,'AEC',10,'#d7e6eb','middle');lab.setAttribute('opacity',opacity);
+  }
+  const drawVector=(group,label,y)=>{
+    if(vectors<=0)return;
+    const values=edgeValues(group),opacity=vectors*(1-pValues),startX=174,cell=22;
+    A('rect',{x:158,y:y-11,width:594,height:50,fill:'#0c2531',opacity:opacity*.42,rx:3});
+    const title=T(90,y+13,label,13,'#d7e6eb');title.setAttribute('font-weight','700');title.setAttribute('opacity',opacity);
+    values.forEach((entry,index)=>A('rect',{x:startX+index*cell,y,width:cell-2,height:28,fill:hot(entry),opacity,rx:1}));
+  };
+  drawVector(0,'HCS vector',426);drawVector(1,'PwMS vector',480);
+  const vectorPhase=T(500,394,'INDEPENDENT EDGE VECTORS',11,'#9bbfc9','middle');vectorPhase.setAttribute('font-weight','700');vectorPhase.setAttribute('letter-spacing','.09em');vectorPhase.setAttribute('opacity',vectors*(1-pValues));
+  if(pValues>0){
+    const values=edgeValues(0),startX=174,y=555,cell=22;
+    const comparison=T(500,534,'edge-wise rank-sum',11,'#9bb3bc','middle');comparison.setAttribute('opacity',pValues);
+    const comparisonLine=L(500,514,500,548,'#7da8b8',1.1);comparisonLine.setAttribute('opacity',pValues);
+    const title=T(90,y+13,'p-value vector',13,'#d7e6eb');title.setAttribute('font-weight','700');title.setAttribute('opacity',pValues);
+    values.forEach((entry,index)=>{const p=clamp01(.14+.78*Math.abs(Math.sin(index*1.37+.3))),significant=p<.42,color=significant?'#145b86':'#7ea9ba';A('rect',{x:startX+index*cell,y,width:cell-2,height:28,fill:color,opacity:pValues,rx:1});if(significant)A('rect',{x:startX+index*cell,y,width:cell-2,height:3,fill:'#d7f3ff',opacity:pValues})});
+    const note=T(500,612,'one synthetic p-value per independent edge',11,'#9bb3bc','middle');note.setAttribute('opacity',pValues);
+  }
+}
+function pValueMatrixFromVector(progress){
+  progress=clamp01(progress);s.replaceChildren();mapLayer.replaceChildren();
+  const matrixReveal=progress,pScore=(row,column)=>clamp01(.16+.72*Math.abs(Math.sin((row+1)*.77+(column+2)*.43))*.78+.12*Math.cos((row-column)*.9)),pShade=score=>'rgb('+Math.round(164-132*score)+','+Math.round(207-116*score)+','+Math.round(226-85*score)+')';
+  const seedVector=opacity=>{if(opacity<=0)return;const startX=174,y=555,cell=22,title=T(90,y+13,'p-value vector',13,'#d7e6eb');title.setAttribute('font-weight','700');title.setAttribute('opacity',opacity);for(let index=0;index<26;index++){const p=clamp01(.14+.78*Math.abs(Math.sin(index*1.37+.3))),significant=p<.42;A('rect',{x:startX+index*cell,y,width:cell-2,height:28,fill:significant?'#145b86':'#7ea9ba',opacity,rx:1})}};
+  seedVector(1-matrixReveal);
+  if(matrixReveal>0){
+    const n=15,cell=18*matrixReveal,width=n*cell,x=500-width/2,y=338-width/2,opacity=matrixReveal;
+    const phase=T(500,88,'EDGE-WISE INFERENCE',11,'#9bbfc9','middle');phase.setAttribute('font-weight','700');phase.setAttribute('letter-spacing','.09em');phase.setAttribute('opacity',opacity);
+    A('rect',{x:x-24,y:y-48,width:width+86,height:width+90,fill:'#0c2531',opacity:opacity*.42,rx:4});
+    const title=T(500,y-24,'symmetric p-value matrix',15,'#d7e6eb','middle');title.setAttribute('font-weight','700');title.setAttribute('opacity',opacity);
+    for(let row=0;row<n;row++)for(let column=0;column<n;column++){const diagonal=row===column,score=pScore(Math.min(row,column),Math.max(row,column)),cellOpacity=diagonal?0:opacity;A('rect',{x:x+column*cell,y:y+row*cell,width:cell-.7,height:cell-.7,fill:diagonal?'#071520':pShade(score),opacity:cellOpacity})}
+    const caption=T(500,y+width+22,'empty diagonal · darker blue: more significant',10,'#9ab3bd','middle');caption.setAttribute('opacity',opacity);
+    for(let index=0;index<68;index++)A('rect',{x:x+width+18,y:y+index*width/68,width:13,height:width/68+.3,fill:pShade(1-index/67),opacity});
+    const high=T(x+width+38,y+8,'p ≈ 0',10,'#9ab3bd'),low=T(x+width+38,y+width,'p ≈ .05',10,'#9ab3bd');high.setAttribute('opacity',opacity);low.setAttribute('opacity',opacity);
+  }
+}
+function graphMeasuresFromMatrix(progress){
+  progress=clamp01(progress);const brainReveal=0,microstateReveal=0,bandReveal=0,statReveal=0,metricReveal=0,boxReveal=0,explanationOpacity=1;
+  pValueMatrixFromVector(1);[...s.children].forEach(node=>node.setAttribute('opacity',String(1-brainReveal)));
+  const brainOpacity=brainReveal*(1-microstateReveal);
+  if(brainOpacity>0){
+    A('rect',{x:0,y:0,width:1000,height:650,fill:'#fbfbfb',opacity:brainOpacity});
+    const brain=A('path',{d:'M 168 402 C 119 331 141 218 232 156 C 327 91 471 77 600 123 C 696 158 778 234 797 319 C 813 393 764 474 678 520 C 581 572 420 568 307 526 C 241 502 193 453 168 402 Z',fill:'#d4d4d4',stroke:'#a5a5a5','stroke-width':1.4,opacity:brainOpacity*.76});
+    A('ellipse',{cx:433,cy:272,rx:198,ry:132,fill:'#ededed',opacity:brainOpacity*.46});A('ellipse',{cx:575,cy:355,rx:168,ry:121,fill:'#b8b8b8',opacity:brainOpacity*.24});
+    for(let index=0;index<13;index++){const y=175+index*25,path=A('path',{d:'M '+(190+index*4)+' '+y+' C '+(330-index*5)+' '+(y-26)+' '+(596+index*4)+' '+(y+23)+' '+(760-index*3)+' '+(y-8),fill:'none',stroke:'#a9a9a9','stroke-width':1.2,opacity:brainOpacity*.44});}
+    const names=['Cz','Pz','Oz','CP4','PO8','TP8','F8','C3','P4','Fz'];
+    for(let index=0;index<76;index++){
+      const angle=index*2.37,radial=28+244*Math.sqrt(index/76),x=475+radial*Math.cos(angle)*1.08,y=330+radial*Math.sin(angle)*.64;if(x<185||x>782||y<133||y>533)continue;
+      const highlighted=index%23===0||index%29===0||index%31===0,category=index%31===0?'#155bb3':index%29===0?'#e02224':'#8d8d8d',radius=highlighted?12:5;
+      A('circle',{cx:x,cy:y,r:radius,fill:highlighted?category:'#8e8e8e',opacity:brainOpacity,stroke:highlighted?'#4a4a4a':'#676767','stroke-width':.7});if(index%5===0){const label=T(x+8,y-7,index<names.length?names[index]:String(index+1),9,'#262626');label.setAttribute('opacity',brainOpacity)}
+    }
+    const title=T(500,74,'synthetic electrode-level spatial summary',13,'#303030','middle');title.setAttribute('font-weight','700');title.setAttribute('opacity',brainOpacity);
+    [['#8d8d8d','1'],['#e02224','2'],['#155bb3','3']].forEach((entry,index)=>{A('rect',{x:874,y:275+index*48,width:24,height:48,fill:entry[0],opacity:brainOpacity});const key=T(909,304+index*48,entry[1],12,'#343434');key.setAttribute('opacity',brainOpacity)});
+  }
+  if(microstateReveal>0){const item=T(130,210,'Microstate A',18,C[0]);item.setAttribute('font-weight','700');item.setAttribute('opacity',microstateReveal*explanationOpacity)}
+  if(bandReveal>0){const bands=['delta','theta','alpha','beta','gamma'];for(let index=0;index<bands.length;index++){const reveal=clamp01(bandReveal*5-index),text=T(302+index*92,210,bands[index],12,'#d7e6eb','middle');text.setAttribute('opacity',reveal*explanationOpacity);if(index>0){const line=L(255+index*92,210,279+index*92,210,'#83afbe',1);line.setAttribute('opacity',reveal*explanationOpacity)}}}
+  if(statReveal>0){const title=T(260,320,'Statistics',13,'#d7e6eb','middle');title.setAttribute('font-weight','700');title.setAttribute('opacity',statReveal*explanationOpacity);['Mean','Skewness'].forEach((label,index)=>{const text=T(353+index*104,320,label,12,'#c8d9de','middle');text.setAttribute('opacity',clamp01(statReveal*2-index)*explanationOpacity)});const line=L(162,225,228,305,'#83afbe',1);line.setAttribute('opacity',statReveal*explanationOpacity)}
+  if(metricReveal>0){const title=T(260,415,'Graph metrics',13,'#d7e6eb','middle');title.setAttribute('font-weight','700');title.setAttribute('opacity',metricReveal*explanationOpacity);['Degree','Clustering','Efficiency'].forEach((label,index)=>{const text=T(378+index*102,415,label,12,C[index],'middle');text.setAttribute('opacity',clamp01(metricReveal*3-index)*explanationOpacity)});const line=L(420,332,420,399,'#83afbe',1);line.setAttribute('opacity',metricReveal*explanationOpacity)}
+  if(boxReveal>0){
+    const heading=T(500,91,'node strength: HCS vs PwMS by microstate',15,'#d7e6eb','middle');heading.setAttribute('font-weight','700');heading.setAttribute('opacity',boxReveal);
+    labels.forEach((label,index)=>{
+      const y=136+index*78,color=C[index],group=T(56,y+7,label,18,color,'middle');group.setAttribute('font-weight','700');group.setAttribute('opacity',boxReveal);
+      ['HCS','PwMS'].forEach((cohort,row)=>{const cy=y-11+row*27,center=285+((index*47+row*31)%96),width=42+((index*19+row*13)%34),left=center-width/2,right=center+width/2;const name=T(92,cy+4,cohort,10,'#b8cbd1');name.setAttribute('opacity',boxReveal);const whisker=L(left-20,cy,right+20,cy,color,1.25);whisker.setAttribute('opacity',boxReveal);const capA=L(left-20,cy-5,left-20,cy+5,color,1.25);const capB=L(right+20,cy-5,right+20,cy+5,color,1.25);capA.setAttribute('opacity',boxReveal);capB.setAttribute('opacity',boxReveal);A('rect',{x:left,y:cy-8,width,height:16,fill:color,opacity:boxReveal*(row? .55:.9),rx:1});const median=L(center,cy-11,center,cy+11,'#eef8fa',1.3);median.setAttribute('opacity',boxReveal)});
+      const test=T(755,y+4,'rank-sum',10,'#9bb3bc');test.setAttribute('opacity',boxReveal);
+    });
+  }
+
+  /* The reference is a scrubbed destination, not a dropped-in static overlay. */
+  /* Keep the existing 25% handoff window, but ease the scrubbed blend at both
+     ends so entering or leaving it never creates a visible step. */
+  const blendProgress=clamp01(progress*4);
+  const crossfadeProgress=blendProgress*blendProgress*(3-2*blendProgress);
+  const zoom=1.10-.10*crossfadeProgress;
+  const width=1120*zoom;
+  const height=560*zoom;
+  const x=(1000-width)/2;
+  const y=(650-height)/2;
+  /* Resolve the handoff from the p-value matrix to the existing graph image. */
+  [...s.children].forEach(node=>node.setAttribute('opacity',String(1-crossfadeProgress)));
+
+  /* A faint global pass establishes the silhouette, then the full reference resolves. */
+  if(crossfadeProgress>0){
+    A('image',{href:'scalp-electrode-reference.png',x,y,width,height,preserveAspectRatio:'xMidYMid meet',opacity:crossfadeProgress*.22});
+    A('image',{href:'scalp-electrode-reference.png',x,y,width,height,preserveAspectRatio:'xMidYMid meet',opacity:crossfadeProgress});
+    const graphTitle=T(500,73,'ELECTRODE-LEVEL GRAPH SUMMARY',12,'#d7e6eb','middle');graphTitle.setAttribute('font-weight','700');graphTitle.setAttribute('letter-spacing','.09em');graphTitle.setAttribute('opacity',crossfadeProgress);
+    const scanY=650*(1-crossfadeProgress);
+    A('rect',{x:0,y:scanY,width:1000,height:650-scanY,fill:'#071520',opacity:(1-crossfadeProgress)*.76});
+  }
+}
+function summariesBarsFromScalp(progress){
+  progress=clamp01(progress);
+  const labels=['A','B','C','D','E','G'];
+  const features=[
+    'Theta — Skewness — Betweenness',
+    'Delta — Mean — Betweenness',
+    'Theta — Mean — Betweenness',
+    'Delta — Mean — Degree',
+    'Delta — Skewness — Clustering coefficient',
+    'Alpha — Skewness — Global efficiency'
+  ];
+
+  /* Preserve section 12 exactly as the source state for this transition. */
+  graphMeasuresFromMatrix(1);
+  /* Only the section-12 scalp asset may carry into section 13. */
+  const sourceFigure=[...s.querySelectorAll('image')];
+  [...s.children].forEach(node=>{if(node.nodeName.toLowerCase()!=='image')node.remove()});
+  sourceFigure.forEach((node,index)=>node.setAttribute('opacity',String((index===0?.22:1)*(1-progress))));
+  if(progress<=0)return;
+
+  const heading=T(710,72,'summary feature · HCS (red) vs PwMS (blue)',15,'#d7e6eb','middle');
+  heading.setAttribute('font-weight','700');heading.setAttribute('opacity',progress);
+  const inference=T(710,94,'exploratory ranking · FDR remains separate',10,'#9bb3bc','middle');inference.setAttribute('opacity',progress);
+  const divider=L(488,104,488,596,'#35515b',1);divider.setAttribute('opacity',progress*.6);
+  const scale=L(510,616,910,616,'#86a2ad',1);scale.setAttribute('opacity',progress*.75);
+  T(510,638,'lower',10,'#9bb3bc').setAttribute('opacity',progress);
+  T(910,638,'higher',10,'#9bb3bc','end').setAttribute('opacity',progress);
+
+  labels.forEach((label,index)=>{
+    const reveal=clamp01(progress*6-index);
+    if(reveal<=0)return;
+    const y=112+index*82;
+    A('rect',{x:494,y:y-8,width:426,height:69,fill:'#0c2531',opacity:reveal*.34,rx:3});
+    const hcWidth=(192+((index*49)%112))*reveal;
+    const pwmsWidth=(178+((index*37+48)%128))*reveal;
+    const tag=T(478,y+5,label,12,C[index],'middle');tag.setAttribute('font-weight','700');tag.setAttribute('opacity',reveal);
+    const feature=T(502,y+5,features[index],13,'#d7e6eb');feature.setAttribute('font-weight','700');feature.setAttribute('opacity',reveal);
+    const baseline=L(510,y+62,910,y+62,'#35515b',1);baseline.setAttribute('opacity',reveal*.6);
+    A('rect',{x:510,y:y+15,width:hcWidth,height:15,fill:'#d62f26',opacity:reveal*.94,rx:1});
+    A('rect',{x:510,y:y+39,width:pwmsWidth,height:15,fill:'#0876b9',opacity:reveal*.94,rx:1});
+    const hc=T(522+hcWidth,y+27,'HCS',10,'#f0c2bb');hc.setAttribute('opacity',reveal);
+    const pwms=T(522+pwmsWidth,y+51,'PwMS',10,'#bcd9e8');pwms.setAttribute('opacity',reveal);
+  });
+}
+function scene(i,p=.52){
+  p=Math.max(0,Math.min(1,p));
+  if(i===2)gfpToMaps(p)
+  if(i===3)groupTemplate(p)
+  H.textContent=D[i][0];G.textContent=D[i][1];R.textContent=String(i+1).padStart(2,'0')+' / 12 · '+D[i][2];
+}
+let activeScene=-1,renderFrame=0;
+draw=scene;
+function sceneProgress(){
+  let all=[...document.querySelectorAll('.step')],mid=innerHeight*.52,best=all[0],dist=Infinity;
+  all.forEach(el=>{let r=el.getBoundingClientRect(),d=Math.abs((r.top+r.bottom)/2-mid);if(d<dist){best=el;dist=d}});
+  let r=best.getBoundingClientRect(),p=Math.max(0,Math.min(.999,(innerHeight-r.top)/(r.height+innerHeight)));
+  let i=+best.dataset.i;
+  if(i!==activeScene){activeScene=i;s.classList.remove('scene-in');if(i!==2&&i!==3){void s.offsetWidth;s.classList.add('scene-in')}}
+  scene(i,p);
+}
+addEventListener('scroll',()=>{cancelAnimationFrame(renderFrame);renderFrame=requestAnimationFrame(sceneProgress)},{passive:true});
+addEventListener('resize',sceneProgress);sceneProgress();
+</script>
+<style>
+  /* Landing-page imagery only: the existing type and content remain untouched. */
+  .hero{--cap-scale:1;--cap-opacity:1;--wave-opacity:0;position:relative;isolation:isolate;background:#081520 url('eeg-sparse-section-01.png') center/cover no-repeat}
+  .hero::before{content:"";position:absolute;z-index:0;inset:-6%;background:url('eeg-cap-hero.png') center/cover no-repeat;transform:scale(var(--cap-scale));transform-origin:76% 27%;opacity:var(--cap-opacity);will-change:transform,opacity}
+  .hero::after{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,#07131ddd 0%,#07131da8 48%,#07131d44 100%);pointer-events:none}
+  .hero>*{position:relative;z-index:2}
+  .step[data-i="0"] .section-one-copy{pointer-events:auto;width:min(445px,43vw);padding:1.6rem 1.7rem;background:transparent;border:0;box-shadow:none}
+  .section-one-copy h2{margin:.5rem 0 .8rem;font-family:Georgia,serif;font-weight:500;letter-spacing:-.05em;font-size:clamp(1.9rem,3.1vw,3rem);line-height:1.03;color:#fff}
+  .section-one-copy p{color:#d2e0e4;font-size:.92rem;line-height:1.63}.section-one-copy .em{color:#fff!important}
+  @media(max-width:760px){.step[data-i="0"] .section-one-copy{width:100%;margin:0}}
+  .stage{--gfp-opacity:0;--gfp-scale:1;position:sticky;background:#071520}
+  #map-layer{position:absolute;z-index:2;inset:0;pointer-events:none}#map-layer img{position:absolute;display:block;box-sizing:border-box;object-fit:cover;border:1.2px solid #d7e6eb;border-radius:50%;transform:translateZ(0)}
+  .stage::after{content:"";position:absolute;z-index:0;inset:-5%;background:#071520 url('gfp-peaks-section-02.png') center/cover no-repeat;opacity:var(--gfp-opacity);transform:scale(var(--gfp-scale));transform-origin:52% 61%;pointer-events:none;will-change:transform,opacity}
+  .stage.signal-stage,.stage.gfp-stage{background:#071520 url('eeg-sparse-section-01.png') center/cover no-repeat}
+  .stage.gfp-stage.gfp-rest{background:#071520 url('gfp-peaks-section-02.png') center/cover no-repeat}.stage.gfp-stage.gfp-rest::after{opacity:0!important}
+  .stage.maps-stage,.stage.gfp-stage.maps-stage{background:#071520}
+  .stage.group-stage{background:#071520}
+  .stage.grand-stage{background:#071520}
+  .stage.sort-stage{background:#071520}
+  .stage.backfit-stage{background:#071520}
+  .stage.temporal-stage{background:#071520}
+  .stage.aec-stage{background:#071520}
+  .stage.edge-stage{background:#071520}
+  .stage.pvalue-stage{background:#071520}
+  .stage.graph-stage{background:#071520}
+  .stage.summary-stage{background:#071520}
+  .stage:not(.signal-stage):not(.gfp-stage):not(.maps-stage):not(.group-stage):not(.grand-stage):not(.sort-stage):not(.backfit-stage):not(.temporal-stage):not(.aec-stage):not(.edge-stage):not(.pvalue-stage):not(.graph-stage):not(.summary-stage){background:#071520}
+  .stage.signal-stage .hud,.stage.signal-stage .rail{color:#c4d7df}
+  .stage.signal-stage .hud b{color:#fff}
+  @media (prefers-reduced-motion:reduce){.hero{--cap-scale:1!important;--cap-opacity:1!important}.hero::before,.stage::after{transition:none!important;transform:none!important}.stage.signal-stage,.stage.gfp-stage{background:#071520 url('eeg-sparse-section-01.png') center/cover no-repeat}}
+</style>
+<script>
+(() => {
+  const hero=document.querySelector('.hero'),stage=document.querySelector('.stage');
+  const originalScene=scene;
+  scene=(i,p)=>{originalScene(i,p);if(i===0||i===1){s.replaceChildren();mapLayer.replaceChildren()}stage.classList.toggle('signal-stage',i===0)};
+  draw=scene;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const setHeroProgress=()=>{
+    if(reduced||!('IntersectionObserver' in window)){hero.style.setProperty('--cap-scale','1');hero.style.setProperty('--cap-opacity','1');return}
+    const r=hero.getBoundingClientRect(),p=Math.max(0,Math.min(1,-r.top/r.height));
+    hero.style.setProperty('--cap-scale',(1+p*.92).toFixed(3));
+    hero.style.setProperty('--cap-opacity',(1-p*.94).toFixed(3));
+  };
+  const gfpStep=document.querySelector('[data-i="1"]');
+  const mapsStep=document.querySelector('[data-i="2"]');
+  const groupStep=document.querySelector('[data-i="3"]');
+  const grandStep=document.querySelector('[data-i="4"]');
+  const sortingStep=document.querySelector('[data-i="5"]');
+  const backfitStep=document.querySelector('[data-i="6"]');
+  const temporalStep=document.querySelector('[data-i="7"]');
+  const aecStep=document.querySelector('[data-i="8"]');
+  const edgeStep=document.querySelector('[data-i="9"]');
+  const graphStep=document.querySelector('[data-i="10"]');
+  const summaryStep=document.querySelector('[data-i="11"]');
+  const progressToCentre=step=>{const r=step.getBoundingClientRect(),copy=step.querySelector('.copy,.section-one-copy'),box=copy.getBoundingClientRect(),topAtCentre=r.top-(box.top+box.height/2-innerHeight/2),travel=Math.max(1,innerHeight-topAtCentre);return Math.max(0,Math.min(1,(innerHeight-r.top)/travel))};
+  const progressFromReadingEntry=step=>{const r=step.getBoundingClientRect(),box=step.querySelector('.copy,.section-one-copy').getBoundingClientRect(),startTop=innerHeight*.58,centreTop=innerHeight/2-(box.top+box.height/2-r.top);return clamp01((startTop-r.top)/Math.max(1,startTop-centreTop))};
+  const distancePastCentre=step=>{const r=step.getBoundingClientRect(),copy=step.querySelector('.copy,.section-one-copy'),box=copy.getBoundingClientRect(),topAtCentre=r.top-(box.top+box.height/2-innerHeight/2);return Math.max(0,topAtCentre-r.top)};
+  const groupMidpointDistance=()=>{const r=groupStep.getBoundingClientRect(),copy=groupStep.querySelector('.copy'),box=copy.getBoundingClientRect(),topAtCentre=r.top-(box.top+box.height/2-innerHeight/2),topAtMidpoint=innerHeight-(innerHeight-topAtCentre)*.5;return distancePastCentre(mapsStep)+r.top-topAtMidpoint};
+  const renderGroupStory=()=>{
+    const mapsRect=mapsStep.getBoundingClientRect(),mapsProgress=progressToCentre(mapsStep),pastMapsCentre=distancePastCentre(mapsStep),holdDistance=innerHeight*.18,groupProgress=progressToCentre(groupStep),groupPastCentre=distancePastCentre(groupStep),midpointDistance=Math.max(holdDistance+1,groupMidpointDistance());
+    if((mapsProgress===0&&mapsRect.top>=innerHeight)||groupPastCentre>innerHeight*.12)return;
+    if(mapsProgress<1){gfpToMaps(mapsProgress);return}
+    if(pastMapsCentre<=holdDistance){gfpToMaps(1);return}
+    if(groupProgress<.5){formGroupColumns(clamp01((pastMapsCentre-holdDistance)/(midpointDistance-holdDistance)));return}
+    consolidateGroupTemplates(clamp01((groupProgress-.5)/.5));
+  };
+  const grandCentreDistance=()=>{const r=grandStep.getBoundingClientRect(),copy=grandStep.querySelector('.copy'),box=copy.getBoundingClientRect(),topAtCentre=r.top-(box.top+box.height/2-innerHeight/2);return distancePastCentre(groupStep)+r.top-topAtCentre};
+  const renderGrandStory=()=>{
+    const groupPastCentre=distancePastCentre(groupStep),grandPastCentre=distancePastCentre(grandStep),holdDistance=innerHeight*.12,centreDistance=Math.max(holdDistance+1,grandCentreDistance());
+    if(groupPastCentre===0||grandPastCentre>innerHeight*.12)return;
+    fuseGroupTemplates(clamp01((groupPastCentre-holdDistance)/(centreDistance-holdDistance)));
+  };
+  const renderSortingStory=()=>{
+    const sortingRect=sortingStep.getBoundingClientRect(),sortingProgress=progressToCentre(sortingStep),sortingPastCentre=distancePastCentre(sortingStep);
+    if((sortingProgress===0&&sortingRect.top>=innerHeight)||sortingPastCentre>innerHeight*.12)return;
+    grandTemplateWithKoenigLabels(sortingProgress);
+  };
+  const renderBackfitStory=()=>{
+    const backfitRect=backfitStep.getBoundingClientRect(),backfitProgress=progressToCentre(backfitStep);
+    if((backfitProgress===0&&backfitRect.top>=innerHeight)||temporalStep.getBoundingClientRect().top<=innerHeight*.58)return;
+    backfittingWithMapLinks(backfitProgress);
+  };
+  const renderTemporalStory=()=>{
+    const temporalRect=temporalStep.getBoundingClientRect(),temporalProgress=progressFromReadingEntry(temporalStep);
+    if(temporalRect.top>=innerHeight*.58||aecStep.getBoundingClientRect().top<=innerHeight*.58)return;
+    temporalDynamicsFromBackfit(temporalProgress);
+  };
+  const renderAecStory=()=>{
+    const aecRect=aecStep.getBoundingClientRect(),aecProgress=progressFromReadingEntry(aecStep),aecPastCentre=distancePastCentre(aecStep);
+    if(aecRect.top>=innerHeight*.58||aecPastCentre>innerHeight*.12)return;
+    aecColumnsFromSignals(aecProgress);
+  };
+  const renderEdgeStory=()=>{
+    const edgeRect=edgeStep.getBoundingClientRect(),edgeProgress=progressToCentre(edgeStep),edgePastCentre=distancePastCentre(edgeStep);
+    if((edgeProgress===0&&edgeRect.top>=innerHeight)||edgePastCentre>innerHeight*.12)return;
+    edgeVectorsFromAec(edgeProgress);
+  };
+  const renderGraphStory=()=>{
+    const graphRect=graphStep.getBoundingClientRect(),graphPastCentre=distancePastCentre(graphStep);
+    if((graphRect.top>=innerHeight)||graphPastCentre>innerHeight*.12)return;
+    const graphProgress=progressToCentre(graphStep);
+    if(graphProgress<.5){pValueMatrixFromVector(graphProgress*2);return}
+    graphMeasuresFromMatrix((graphProgress-.5)*2);
+  };
+  const renderSummaryStory=()=>{
+    const summaryRect=summaryStep.getBoundingClientRect(),summaryProgress=progressFromReadingEntry(summaryStep);
+    if(summaryRect.top>=innerHeight*.58)return;
+    summariesBarsFromScalp(summaryProgress);
+  };
+  const setGfpProgress=()=>{
+    const r=gfpStep.getBoundingClientRect();
+    const p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):Math.max(0,Math.min(1,(innerHeight-r.top)/(innerHeight*.82)));
+    stage.classList.remove('gfp-rest');stage.classList.toggle('gfp-stage',p>0);stage.style.setProperty('--gfp-opacity',p.toFixed(3));stage.style.setProperty('--gfp-scale',(1+p*.18).toFixed(3));
+  };
+  const setMapsProgress=()=>{
+    const r=mapsStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(mapsStep);
+    if(p>0){stage.classList.remove('gfp-rest');stage.classList.add('gfp-stage','maps-stage');stage.style.setProperty('--gfp-opacity',(1-p).toFixed(3));stage.style.setProperty('--gfp-scale',(1+(1-p)*.18).toFixed(3))}else stage.classList.remove('maps-stage');
+  };
+  const setGroupProgress=()=>{
+    const r=groupStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(groupStep);
+    if(p>0){stage.classList.remove('gfp-rest');stage.classList.add('group-stage')}else stage.classList.remove('group-stage');
+  };
+  const setGrandProgress=()=>{const r=grandStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(grandStep);stage.classList.toggle('grand-stage',p>0)};
+  const setSortingProgress=()=>{const r=sortingStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(sortingStep);stage.classList.toggle('sort-stage',p>0)};
+  const setBackfitProgress=()=>{const r=backfitStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(backfitStep);stage.classList.toggle('backfit-stage',p>0)};
+  const setTemporalProgress=()=>{const r=temporalStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(temporalStep);stage.classList.toggle('temporal-stage',p>0)};
+  const setAecProgress=()=>{const r=aecStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(aecStep);stage.classList.toggle('aec-stage',p>0)};
+  const setEdgeProgress=()=>{const r=edgeStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(edgeStep);stage.classList.toggle('edge-stage',p>0)};
+  const setGraphProgress=()=>{const r=graphStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(graphStep);stage.classList.toggle('graph-stage',p>0)};
+  const setSummaryProgress=()=>{const r=summaryStep.getBoundingClientRect(),p=reduced||!('IntersectionObserver' in window)?(r.top<innerHeight*.52?1:0):progressToCentre(summaryStep);stage.classList.toggle('summary-stage',p>0)};
+  let earlySceneFrame=0;
+  const updateEarlyStory=()=>{setHeroProgress();setGfpProgress();setMapsProgress();setGroupProgress();setGrandProgress();setSortingProgress();setBackfitProgress();setTemporalProgress();setAecProgress();setEdgeProgress();setGraphProgress();setSummaryProgress();renderGroupStory();renderGrandStory();renderSortingStory();renderBackfitStory();renderTemporalStory();renderAecStory();renderEdgeStory();renderGraphStory();renderSummaryStory()};
+  addEventListener('scroll',()=>{cancelAnimationFrame(earlySceneFrame);earlySceneFrame=requestAnimationFrame(updateEarlyStory)},{passive:true});
+  addEventListener('resize',updateEarlyStory);updateEarlyStory();sceneProgress();renderGroupStory();renderGrandStory();renderSortingStory();renderBackfitStory();renderTemporalStory();renderAecStory();renderEdgeStory();renderGraphStory();renderSummaryStory();
+})();
+</script>
+<style>
+  /* Sections 3–5: static presentation polish only; map files and motion are unchanged. */
+  .stage.maps-stage,
+  .stage.group-stage,
+  .stage.grand-stage {
+    background-color: #071520 !important;
+    background-image:
+      radial-gradient(circle at 50% 47%, rgba(28, 100, 129, .18), transparent 34%),
+      linear-gradient(90deg, rgba(128, 202, 228, .045) 1px, transparent 1px),
+      linear-gradient(rgba(128, 202, 228, .035) 1px, transparent 1px) !important;
+    background-size: auto, 5rem 5rem, 5rem 5rem !important;
+  }
+
+  .stage.maps-stage #map-layer img,
+  .stage.group-stage #map-layer img,
+  .stage.grand-stage #map-layer img {
+    border: 2px solid rgba(224, 243, 249, .96) !important;
+    box-shadow: 0 0 0 4px rgba(93, 190, 223, .10), 0 10px 24px rgba(0, 0, 0, .28) !important;
+  }
+
+  /* Final Section 01 card override: matches the white methodology panels. */
+  .steps .step[data-i="0"] .section-one-copy {
+    background: #fff !important;
+    border: 1px solid rgba(196, 215, 222, .92) !important;
+    box-shadow: 0 18px 45px rgba(7, 31, 41, .13) !important;
+  }
+  .steps .step[data-i="0"] .section-one-copy h2 { color: #162832 !important; }
+  .steps .step[data-i="0"] .section-one-copy p { color: #4d606a !important; }
+  .steps .step[data-i="0"] .section-one-copy .em { color: #213943 !important; }
+</style>
+<script>
+  (() => {
+    const formatPipeline = element => {
+      if (!element.textContent.includes('→')) return;
+      const original = element.textContent.trim();
+      const punctuation = original.endsWith('.') ? '.' : '';
+      const terms = original.replace(/[.]/g, '').split(/\s*→\s*/);
+      element.classList.add('pipeline');
+      element.replaceChildren();
+      terms.forEach((term, index) => {
+        const label = document.createElement('span');
+        label.textContent = term;
+        element.append(label);
+        if (index < terms.length - 1) {
+          const arrow = document.createElement('b');
+          arrow.textContent = '⟶';
+          arrow.setAttribute('aria-hidden', 'true');
+          element.append(arrow);
+        }
+      });
+      if (punctuation) element.append(document.createTextNode(punctuation));
+    };
+    document.querySelectorAll('.em').forEach(formatPipeline);
+    const rail = document.querySelector('#r');
+    const refreshRail = () => {
+      if (rail.textContent.includes('→')) rail.textContent = rail.textContent.replaceAll('→', '⟶');
+    };
+    refreshRail();
+    new MutationObserver(refreshRail).observe(rail, { childList: true, characterData: true, subtree: true });
+    const scene = document.querySelector('#s');
+    const refreshSceneArrows = () => scene.querySelectorAll('text').forEach(node => {
+      if (node.textContent.includes('→')) node.textContent = node.textContent.replaceAll('→', '⟶');
+    });
+    refreshSceneArrows();
+    new MutationObserver(refreshSceneArrows).observe(scene, { childList: true, characterData: true, subtree: true });
+  })();
+</script>
+<style>
+  /* Last rules deliberately win over the original dark landing treatment. */
+  .pipeline { display: flex; flex-wrap: wrap; align-items: center; gap: .28rem .48rem; line-height: 1.55; }
+  .pipeline span { white-space: nowrap; }
+  .pipeline b { color: #0876b9; font-size: 1.18em; font-weight: 500; line-height: 1; }
+  @media (max-width: 760px) { .pipeline { gap: .2rem .34rem; } }
+  .stage,
+  .stage.signal-stage,
+  .stage.gfp-stage,
+  .stage.gfp-stage.gfp-rest,
+  .stage.maps-stage,
+  .stage.group-stage,
+  .stage.grand-stage,
+  .stage.sort-stage,
+  .stage.backfit-stage,
+  .stage.temporal-stage,
+  .stage.aec-stage,
+  .stage.edge-stage,
+  .stage.pvalue-stage,
+  .stage.graph-stage,
+  .stage.summary-stage { background-color: #fff !important; background-image: none !important; }
+  .stage.signal-stage, .stage.gfp-stage:not(.maps-stage) { background-image: url('eeg-sparse-section-01.png') !important; background-position: center; background-size: cover !important; }
+  .stage.gfp-stage.gfp-rest { background-image: url('gfp-peaks-section-02.png') !important; }
+  .stage::after { opacity: var(--gfp-opacity) !important; filter: none !important; }
+  .stage.maps-stage, .stage.group-stage, .stage.grand-stage {
+    background-image: none !important;
+  }
+  .stage.maps-stage #map-layer img, .stage.group-stage #map-layer img, .stage.grand-stage #map-layer img {
+    border-color: #496773 !important;
+    box-shadow: 0 0 0 4px rgba(30, 130, 164, .10), 0 10px 24px rgba(15, 48, 60, .14) !important;
+  }
+  .hero { color: #17313c !important; background: #fff !important; }
+  .hero::before { opacity: var(--cap-opacity) !important; filter: none !important; }
+  .hero::after { background: linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.94) 48%, rgba(255,255,255,.25) 100%) !important; }
+  .hero .k { color: #0876b9 !important; }
+  .hero p { color: #3d5b67 !important; }
+</style>
