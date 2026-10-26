@@ -100,17 +100,25 @@
         <div>
           <h2 id="learning-title">SSVEP Wheelchair<br /><span class="accent">Exploration</span></h2>
           <p>
-            My current personal project is a hands-on exploration of SSVEP-based brain–computer interfaces and simulated wheelchair navigation.
-            The aim is to understand established methods through implementation, comparison, and analysis of their practical trade-offs.
+            A hands-on exploration of established SSVEP decoding methods and their integration with simulated wheelchair navigation.
           </p>
-          <p>
-            The current pipeline combines causal EEG filtering, filter-bank canonical correlation analysis (FBCCA), and calibrated thresholds with temporal confirmation and STOP recovery.
-            A mission state machine connects decoded commands to A* path planning and geometric obstacle protection in CoppeliaSim.
-          </p>
-          <p>
-            Replays of recorded EEG from two datasets help examine how decoding errors affect simulated navigation and where the approach remains limited.
-            The project repository will be made public in a future update.
-          </p>
+          <details class="learning-details">
+            <summary>Read about the approach</summary>
+            <div class="learning-abstract">
+              <p>
+                My current personal project is a hands-on exploration of SSVEP-based brain–computer interfaces and simulated wheelchair navigation.
+                The aim is to understand established methods through implementation, comparison, and analysis of their practical trade-offs.
+              </p>
+              <p>
+                The current pipeline combines causal EEG filtering, filter-bank canonical correlation analysis (FBCCA), and calibrated thresholds with temporal confirmation and STOP recovery.
+                A mission state machine connects decoded commands to A* path planning and geometric obstacle protection in CoppeliaSim.
+              </p>
+              <p>
+                Replays of recorded EEG from two datasets help examine how decoding errors affect simulated navigation and where the approach remains limited.
+                The project repository will be made public in a future update.
+              </p>
+            </div>
+          </details>
           <div class="learning-meta" aria-label="Project status and topics">
             <span>Personal exploration</span><span>Causal FBCCA</span><span>Mission control</span><span>A* navigation</span><span>CoppeliaSim</span>
           </div>
