@@ -72,6 +72,13 @@ p { margin: 0 0 1rem; }
 .learning-meta { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 1.7rem; }
 .learning-meta span { border: 1px solid var(--line); border-radius: 99px; padding: .2rem .58rem; color: var(--muted); font-family: "DM Mono", monospace; font-size: .67rem; }
 
+.learning-details { margin-top: 1.25rem; }
+.learning-details summary { width: fit-content; cursor: pointer; color: var(--ink); font-family: "DM Mono", monospace; font-size: .78rem; text-decoration: underline; text-decoration-color: var(--aqua); text-underline-offset: .3rem; }
+.learning-details summary:hover { color: var(--blue); }
+.learning-details summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 6px; border-radius: 2px; }
+.learning-abstract { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+.learning-abstract p:last-child { margin-bottom: 0; }
+
 .projects { padding: 7rem 0; border-top: 1px solid var(--ink); }
 .section-heading { max-width: 850px; margin-bottom: 4rem; }
 .section-heading h2 { margin: .8rem 0; }
